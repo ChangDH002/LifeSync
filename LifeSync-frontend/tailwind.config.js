@@ -4,24 +4,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#007bff',
-        secondary: '#6c757d',
-        success: '#28a745',
-        warning: '#ffc107',
-        danger: '#dc3545',
-        info: '#17a2b8',
+        primary: '#6B8E61',
+        secondary: '#D97757',
+        base: '#FDFBF7',
+        content: '#333333',
+        success: '#4A6741',
+        danger: '#C0392B',
       },
       fontSize: {
-        xs: '0.75rem',
-        sm: '0.875rem',
         base: '1rem',
         lg: '1.125rem',
         xl: '1.25rem',
         '2xl': '1.5rem',
+        '3xl': '1.875rem',
       },
       spacing: {
-        xs: '0.5rem',
-        sm: '0.75rem',
         md: '1rem',
         lg: '1.5rem',
         xl: '2rem',

@@ -38,10 +38,17 @@ npm run build
 자세한 개발 규칙은 [StyleGuide.md](./StyleGuide.md)를 참고하세요.
 
 - **아키텍처**: Feature 기반 구조
-- **상태관리**: React Query (서버), useState (클라이언트)
+- **상태관리**: React Query (서버), `useState/useReducer` 기본, 교차 페이지 상태만 Zustand
 - **API**: `shared/api/` 중앙화
 - **스타일**: Tailwind CSS
 - **접근성**: 시니어 사용자 고려
+
+## 🧭 현재 기준
+
+- 라우팅은 `src/app/routes`에서만 정의
+- `pages`는 화면 조합만 담당하고 기능 구현은 `features`에 위임
+- `shared`는 도메인을 몰라야 하며 2개 이상 feature에서 재사용될 때만 승격
+- Zustand는 인증 세션, 글자 크기, 알림 설정처럼 앱 전역 교차 상태에만 사용
 
 ## ✅ 체크리스트
 

@@ -4,6 +4,14 @@
 
 export const APP_NAME = 'LifeSync'
 
+export const PRIMARY_NAV_ITEMS = [
+  { label: '홈', path: '/' },
+  { label: '치매 정보', path: '/information' },
+  { label: '인지 훈련', path: '/training' },
+  { label: '챗봇', path: '/chatbot' },
+  { label: '마이페이지', path: '/mypage' },
+] as const
+
 export const API_ENDPOINTS = {
   auth: {
     login: '/auth/login',

@@ -387,6 +387,15 @@ interface ChatbotButtonProps {
 - Context API
 - 필요 시 Zustand
 
+사용 기준:
+- 페이지를 넘나들며 유지되어야 하는 상태에만 사용한다
+- 서버 응답 캐시는 Zustand에 저장하지 않고 React Query에 맡긴다
+- 한 feature 내부에서 끝나는 UI 상태는 지역 상태로 유지한다
+
+예:
+- 사용 가능: 로그인 세션, 접근 권한, 접근성 설정, 알림 설정
+- 지양: 리스트 데이터, 상세 응답 캐시, 폼 입력값, 모달 열림 상태
+
 ### 8.4 Hook 분리 기준
 컴포넌트 내부에 비즈니스 로직이 길어지면 `hooks.ts` 또는 `useSomething.ts`로 분리한다.
 
@@ -474,6 +483,34 @@ Props, API 응답, 상태는 반드시 타입을 정의한다.
 - Mobile First
 - 기본은 모바일, 필요 시 `md:`, `lg:` 확장
 
+### 11.5 Color Palette
+/* tailwind.config.js에서 정의 */
+colors: {
+  /* 메인 컬러 */
+  primary: '#6B8E61',    /* Muted Sage */
+  
+  /* 포인트 컬러 */
+  secondary: '#D97757',  /* Terracotta */
+  
+  /* 배경 컬러 */
+  base: '#FDFBF7',       /* Paper White */
+  
+  /* 본문 */
+  content: '#333333',    /* Dark Grey */
+  
+  /* 성공/긍정 */
+  success: '#4A6741',    /* Deep Green */
+  
+  /* 경고/에러 */
+  danger: '#C0392B',     /* Brick Red */
+}
+---
+
+### 💡 Design Guide for Seniors
+- **High Contrast:** 배경색(`Paper White`)과 텍스트(`Dark Grey`)의 대비를 명확히 하여 시력이 약한 사용자를 배려합니다.
+- **Visual Feedback:** 중요한 행동(버튼 클릭 등)에는 `Point Color`를 사용하여 즉각적인 인지를 돕습니다.
+- **Consistency:** 긍정적인 진행 상황은 `Main Color`, 주의가 필요한 상황은 `Point Color`를 일관되게 사용합니다.
+
 ---
 
 ## 12. 접근성 규칙
@@ -502,6 +539,14 @@ import { apiClient } from '@/shared/api/client';
 ```ts
 import { Button } from '../../../../shared/ui/Button';
 ```
+
+---
+
+## 13.5 라우팅 규칙
+
+- 모든 라우트 정의는 `app/routes`에서만 관리한다
+- 페이지 컴포넌트는 `pages`에서 export하고, 라우터가 이를 조합한다
+- feature가 직접 라우터를 소유하지 않는다
 
 ---
 
