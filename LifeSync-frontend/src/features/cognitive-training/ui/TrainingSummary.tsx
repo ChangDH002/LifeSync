@@ -9,11 +9,13 @@ const trainingPrograms = [
 export function TrainingSummary() {
   return (
     <SectionCard className="w-full">
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary">Training</p>
-      <h2 className="mt-4 text-2xl font-bold text-content">인지 훈련을 한 화면에서 이어갑니다.</h2>
-      <ul className="mt-5 space-y-3 text-lg leading-8 text-content/80">
+      <div className="section-badge">Training</div>
+      <h2 className="content-title mt-4">
+        인지 훈련을 한 화면에서 이어갑니다.
+      </h2>
+      <ul className="mt-5 space-y-3 text-base leading-8 text-contentMid">
         {trainingPrograms.map((program) => (
-          <li key={program} className="rounded-2xl bg-primary/5 px-4 py-3">
+          <li key={program} className="rounded-2xl bg-primaryPale px-4 py-3 text-base font-medium text-teal">
             {program}
           </li>
         ))}

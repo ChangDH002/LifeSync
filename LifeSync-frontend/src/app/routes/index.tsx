@@ -8,9 +8,11 @@ import {
   LoginPage,
   MypagePage,
   NotFoundPage,
+  RoutinePage,
   SettingsPage,
   TrainingPage,
 } from '@/pages'
+import { RequireAuth } from './RequireAuth'
 
 export const router = createBrowserRouter([
   {
@@ -23,19 +25,43 @@ export const router = createBrowserRouter([
   },
   {
     path: ROUTE_PATHS.mypage,
-    element: <MypagePage />,
+    element: (
+      <RequireAuth>
+        <MypagePage />
+      </RequireAuth>
+    ),
   },
   {
     path: ROUTE_PATHS.settings,
-    element: <SettingsPage />,
+    element: (
+      <RequireAuth>
+        <SettingsPage />
+      </RequireAuth>
+    ),
   },
   {
     path: ROUTE_PATHS.avatar,
-    element: <AvatarPage />,
+    element: (
+      <RequireAuth>
+        <AvatarPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.routine,
+    element: (
+      <RequireAuth>
+        <RoutinePage />
+      </RequireAuth>
+    ),
   },
   {
     path: ROUTE_PATHS.training,
-    element: <TrainingPage />,
+    element: (
+      <RequireAuth>
+        <TrainingPage />
+      </RequireAuth>
+    ),
   },
   {
     path: ROUTE_PATHS.information,
@@ -43,7 +69,11 @@ export const router = createBrowserRouter([
   },
   {
     path: ROUTE_PATHS.chatbot,
-    element: <ChatbotPage />,
+    element: (
+      <RequireAuth>
+        <ChatbotPage />
+      </RequireAuth>
+    ),
   },
   {
     path: '*',

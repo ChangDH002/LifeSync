@@ -3,21 +3,29 @@
 @layer base {
   :root {
     /* 색상 팔레트 */
-    --color-primary: 107 142 97;
-    --color-secondary: 217 119 87;
-    --color-base: 253 251 247;
-    --color-content: 51 51 51;
+    --color-primary: 92 138 107;
+    --color-primary-light: 138 184 154;
+    --color-primary-pale: 232 242 236;
+    --color-secondary: 212 129 58;
+    --color-teal: 45 110 107;
+    --color-teal-dark: 26 74 72;
+    --color-base: 250 247 242;
+    --color-surface: 255 254 249;
+    --color-content: 30 45 43;
+    --color-content-mid: 74 94 92;
+    --color-content-light: 122 143 141;
+    --color-border: 216 232 222;
     --color-success: 74 103 65;
     --color-danger: 192 57 43;
 
     /* 배경 */
-    --bg-primary: 253 251 247;
-    --bg-secondary: 248 244 235;
-    --bg-tertiary: 239 233 221;
+    --bg-primary: 250 247 242;
+    --bg-secondary: 255 254 249;
+    --bg-tertiary: 232 242 236;
 
     /* 텍스트 */
-    --text-primary: 51 51 51;
-    --text-secondary: 92 92 92;
+    --text-primary: 30 45 43;
+    --text-secondary: 74 94 92;
     --text-light: 255 255 255;
 
     /* 크기 */

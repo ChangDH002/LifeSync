@@ -6,8 +6,10 @@ export function LoginPage() {
   return (
     <main className="min-h-screen bg-base">
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-4xl px-4 py-10 md:px-6">
-        <LoginPrompt />
+      <div className="hero-surface">
+        <div className="page-shell flex py-14 md:py-20">
+          <LoginPrompt />
+        </div>
       </div>
       <AppFooter />
     </main>

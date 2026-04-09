@@ -5,11 +5,30 @@
 export const APP_NAME = 'LifeSync'
 
 export const PRIMARY_NAV_ITEMS = [
-  { label: '홈', path: '/' },
-  { label: '치매 정보', path: '/information' },
+  { label: '예방 정보', path: '/information' },
+  { label: '나무 키우기', path: '/avatar' },
+  { label: 'AI 챗봇', path: '/chatbot' },
   { label: '인지 훈련', path: '/training' },
-  { label: '챗봇', path: '/chatbot' },
+] as const
+
+export const FOOTER_SERVICE_LINKS = [
+  { label: '예방 정보', path: '/information' },
+  { label: '나무 키우기', path: '/avatar' },
+  { label: 'AI 챗봇', path: '/chatbot' },
+  { label: '인지 훈련', path: '/training' },
   { label: '마이페이지', path: '/mypage' },
+] as const
+
+export const FOOTER_POLICY_ITEMS = [
+  '서비스 이용약관',
+  '개인정보처리방침',
+  '의료고지사항',
+] as const
+
+export const FOOTER_SUPPORT_ITEMS = [
+  '공지사항',
+  '자주 묻는 질문',
+  '고객센터',
 ] as const
 
 export const API_ENDPOINTS = {

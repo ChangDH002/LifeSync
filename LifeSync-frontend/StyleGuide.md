@@ -198,14 +198,16 @@ features/{feature}/
 
 - `features/gnb`
   - 로고
+  - 로고 클릭 시 메인 페이지 이동
+  - 서비스 설명 문구
   - 메뉴 이동
-  - 로그인 상태 영역
-  - 마이페이지/로그아웃 버튼
+  - 로그인/회원가입 또는 프로필/로그아웃 영역
 - `features/footer`
-  - 개인정보 처리 방침
-  - 이용 약관
-  - 쿠키/세션 정책
-  - 팀 정보
+  - 서비스 소개
+  - 핵심 기능 링크
+  - 지원 영역
+  - 개인정보 처리 방침 / 이용 약관 / 의료고지사항
+  - 의료 진단 대체 아님 안내 문구
 
 ### 4.2 회원 / 설문
 회원가입, 로그인, 소셜 인증, 위험도 설문, 성향 설문은 `features/auth`, `features/survey`로 분리한다.
@@ -472,6 +474,17 @@ Props, API 응답, 상태는 반드시 타입을 정의한다.
 - 공통 UI 컴포넌트로 승격
 - 반복 패턴은 shared/ui로 이동
 
+현재 공통 클래스 예시:
+- `.btn-primary`, `.btn-secondary`
+- `.input-base`
+- `.card`
+- `.section-badge`, `.section-title`, `.section-subtitle`
+- `.content-title`, `.content-body`, `.content-note`
+- `.page-shell`
+- `.hero-surface`
+- `.logo-mark`
+- `.nav-link`
+
 ### 11.3 시니어 친화 스타일 원칙
 - 기본 폰트 크기를 크게 유지
 - 버튼 높이는 충분히 크게 유지
@@ -479,37 +492,79 @@ Props, API 응답, 상태는 반드시 타입을 정의한다.
 - 클릭 가능한 요소는 명확히 보이게 디자인
 - 텍스트만으로 부족하면 아이콘과 함께 안내
 
+추가 원칙:
+- 여백을 넉넉하게 사용해 화면 밀도를 낮춘다
+- 카드와 입력창은 둥근 모서리와 명확한 경계선을 유지한다
+- 헤더는 반투명 배경과 blur를 사용해 떠 있는 느낌을 준다
+- 푸터는 어두운 톤으로 본문과 시각적으로 분리한다
+- GNB 메뉴와 주요 버튼은 본문보다 한 단계 큰 크기로 유지해 고령층도 빠르게 인지할 수 있게 한다
+- GNB 비활성 메뉴도 충분한 대비를 가져야 하며, 활성 메뉴는 배경색과 경계 효과로 즉시 구분되어야 한다
+- 홈 이동은 별도 `홈` 메뉴보다 브랜드 로고 클릭으로 제공하고, 메뉴 영역은 핵심 기능 중심으로 유지한다
+
 ### 11.4 반응형
 - Mobile First
 - 기본은 모바일, 필요 시 `md:`, `lg:` 확장
 
+현재 기준:
+- 공통 컨테이너는 `page-shell`로 관리한다
+- 최대 폭은 `1200px` 기준으로 유지한다
+- 메인 Hero는 데스크톱에서 2열 구성으로 넓게 사용한다
+
 ### 11.5 Color Palette
 /* tailwind.config.js에서 정의 */
 colors: {
-  /* 메인 컬러 */
-  primary: '#6B8E61',    /* Muted Sage */
-  
-  /* 포인트 컬러 */
-  secondary: '#D97757',  /* Terracotta */
-  
-  /* 배경 컬러 */
-  base: '#FDFBF7',       /* Paper White */
-  
-  /* 본문 */
-  content: '#333333',    /* Dark Grey */
-  
-  /* 성공/긍정 */
-  success: '#4A6741',    /* Deep Green */
-  
-  /* 경고/에러 */
-  danger: '#C0392B',     /* Brick Red */
+  primary: '#5C8A6B',      /* Sage */
+  primaryLight: '#8AB89A', /* Sage Light */
+  primaryPale: '#E8F2EC',  /* Sage Pale */
+  secondary: '#D4813A',    /* Amber */
+  teal: '#2D6E6B',         /* Teal */
+  tealDark: '#1A4A48',     /* Deep Teal */
+  base: '#FAF7F2',         /* Cream */
+  surface: '#FFFEF9',      /* Warm White */
+  content: '#1E2D2B',      /* Text Dark */
+  contentMid: '#4A5E5C',   /* Text Mid */
+  contentLight: '#7A8F8D', /* Text Light */
+  border: '#D8E8DE',       /* Border */
+  success: '#4A6741',
+  danger: '#C0392B',
 }
 ---
 
+### 11.6 Typography
+- 기본 본문 폰트는 `Noto Sans KR`
+- 제목, 브랜드명, 본문 모두 `Noto Sans KR` 계열을 기본으로 사용한다
+- 시스템 fallback은 `Pretendard`, `Apple SD Gothic Neo`, `sans-serif` 순서로 둔다
+- 기본 본문 크기는 `18px`, 줄간격은 `1.7`
+- 제목 위계는 다른 폰트로 구분하지 않고 `font-weight`, `size`, `tracking`으로 만든다
+- 예외적으로 브랜드 로고 텍스트에는 `Noto Serif KR`를 사용할 수 있다
+
+권장 타입 스케일:
+- 보조 텍스트: `16px`
+- 기본 본문: `18px`
+- 큰 본문 / 버튼 / 입력: `20px`
+- 강조 본문 / 보조 제목: `22px`
+- 섹션 제목: `28px`
+- 큰 섹션 제목: `34px`
+- Hero 제목: `48px` 전후
+
+컴포넌트 기준:
+- GNB 메뉴: `18~20px`
+- GNB 설명 문구: `17~18px`
+- 버튼 텍스트: `18~20px`
+- 입력 필드 텍스트: `18px`
+- 카드 본문: `18px`
+- 푸터 링크: `16~18px`
+
+### 11.7 Surface Rules
+- 카드 기본형은 `surface + border + soft shadow` 조합을 사용한다
+- 주요 CTA는 `primary -> teal` 그라데이션 버튼을 사용한다
+- 보조 CTA는 밝은 배경 + `primary/teal` 경계선 조합을 사용한다
+- Hero 배경은 sage/teal 계열의 밝은 그라데이션과 radial shape를 사용한다
+
 ### 💡 Design Guide for Seniors
-- **High Contrast:** 배경색(`Paper White`)과 텍스트(`Dark Grey`)의 대비를 명확히 하여 시력이 약한 사용자를 배려합니다.
-- **Visual Feedback:** 중요한 행동(버튼 클릭 등)에는 `Point Color`를 사용하여 즉각적인 인지를 돕습니다.
-- **Consistency:** 긍정적인 진행 상황은 `Main Color`, 주의가 필요한 상황은 `Point Color`를 일관되게 사용합니다.
+- **High Contrast:** `Cream/Warm White` 배경과 `Text Dark/Deep Teal` 텍스트 대비를 유지합니다.
+- **Visual Feedback:** 주요 행동은 그라데이션 CTA, 보조 행동은 연한 sage 배경과 경계선으로 구분합니다.
+- **Consistency:** 헤더, 카드, 버튼, 푸터 모두 sage/teal/cream 계열 안에서 통일합니다.
 
 ---
 
