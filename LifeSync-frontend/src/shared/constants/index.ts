@@ -20,9 +20,9 @@ export const FOOTER_SERVICE_LINKS = [
 ] as const
 
 export const FOOTER_POLICY_ITEMS = [
-  '서비스 이용약관',
-  '개인정보처리방침',
-  '의료고지사항',
+  { label: '서비스 이용약관', path: '/terms' },
+  { label: '개인정보 처리방침', path: '/privacy' },
+  { label: '의료 고지사항', path: '/medical-notice' },
 ] as const
 
 export const FOOTER_SUPPORT_ITEMS = [

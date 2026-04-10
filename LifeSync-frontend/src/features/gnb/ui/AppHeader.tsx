@@ -3,7 +3,7 @@ import { useAuth } from '@/features/auth'
 import { APP_CONFIG } from '@/shared/config'
 import { PRIMARY_NAV_ITEMS } from '@/shared/constants'
 import { cn } from '@/shared/lib'
-import { Button } from '@/shared/ui'
+import { Button, LogoMark } from '@/shared/ui'
 
 export function AppHeader() {
   const navigate = useNavigate()
@@ -19,7 +19,7 @@ export function AppHeader() {
       <div className="page-shell flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <NavLink className="flex items-center gap-3 font-serif text-[31px] font-black tracking-[-0.03em] text-tealDark" to="/">
-            <span className="logo-mark h-12 w-12 text-[22px]">🌿</span>
+            <LogoMark className="h-12 w-12" iconClassName="h-[22px] w-[22px]" />
             {APP_CONFIG.name}
           </NavLink>
           <p className="mt-2 max-w-[420px] text-[17px] font-medium leading-7 text-contentMid">

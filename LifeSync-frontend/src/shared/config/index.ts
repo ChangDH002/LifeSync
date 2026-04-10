@@ -18,6 +18,9 @@ export const ROUTE_PATHS = {
   training: '/training',
   information: '/information',
   chatbot: '/chatbot',
+  terms: '/terms',
+  privacy: '/privacy',
+  medicalNotice: '/medical-notice',
 } as const
 
 export const API_CONFIG = {

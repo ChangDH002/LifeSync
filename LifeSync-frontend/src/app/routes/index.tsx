@@ -6,10 +6,13 @@ import {
   HomePage,
   InformationPage,
   LoginPage,
+  MedicalNoticePage,
   MypagePage,
   NotFoundPage,
+  PrivacyPolicyPage,
   RoutinePage,
   SettingsPage,
+  TermsPage,
   TrainingPage,
 } from '@/pages'
 import { RequireAuth } from './RequireAuth'
@@ -74,6 +77,18 @@ export const router = createBrowserRouter([
         <ChatbotPage />
       </RequireAuth>
     ),
+  },
+  {
+    path: ROUTE_PATHS.terms,
+    element: <TermsPage />,
+  },
+  {
+    path: ROUTE_PATHS.privacy,
+    element: <PrivacyPolicyPage />,
+  },
+  {
+    path: ROUTE_PATHS.medicalNotice,
+    element: <MedicalNoticePage />,
   },
   {
     path: '*',

@@ -2,7 +2,7 @@ import { FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTE_PATHS } from '@/shared/config'
 import { useAuth } from '../hooks'
-import { Button, SectionCard } from '@/shared/ui'
+import { Button, LogoMark, SectionCard } from '@/shared/ui'
 
 export function LoginPrompt() {
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ export function LoginPrompt() {
   return (
     <SectionCard className="w-full max-w-2xl rounded-[28px] px-8 py-10">
       <div className="mb-8 flex items-center gap-3 font-serif text-2xl font-black tracking-[-0.02em] text-tealDark">
-        <span className="logo-mark">🌿</span>
+        <LogoMark />
         LifeSync
       </div>
       <div className="section-badge">Account</div>

@@ -1,135 +1,162 @@
-import { useEffect, useState } from 'react'
+import {
+  Activity,
+  Brain,
+  ClipboardList,
+  Gamepad2,
+  Leaf,
+  MessageCircle,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { ChatbotPreview } from '@/features/chatbot'
-import { TrainingSummary } from '@/features/cognitive-training'
-import { DementiaInfoPreview } from '@/features/dementia-info'
 import { AppFooter } from '@/features/footer'
 import { AppHeader } from '@/features/gnb'
-import { Button, SectionCard } from '@/shared/ui'
+import { Button, LogoMark, SectionCard } from '@/shared/ui'
 
-const cognitiveHighlights = [
+const featureCards = [
   {
-    title: '수면과 기억 정리',
-    body: '규칙적인 수면은 하루 동안 받은 정보를 정리하고 기억을 안정화하는 데 도움을 줍니다.',
-    note: '오늘은 취침 1시간 전 밝은 화면을 줄여보세요.',
+    icon: ClipboardList,
+    title: '생활습관 설문',
+    body: '수면, 식습관, 운동, 인지활동 등 생활습관을 분석하여 맞춤형 위험도를 파악합니다.',
+    to: '/login',
   },
   {
-    title: '가벼운 걷기와 집중력',
-    body: '짧은 걷기 습관은 뇌혈류를 돕고 기분을 안정시켜 집중력을 유지하는 데 유리합니다.',
-    note: '식사 후 10분 산책부터 시작해도 충분합니다.',
+    icon: MessageCircle,
+    title: 'AI 챗봇 상담',
+    body: '언제든지 AI 상담사와 대화하며 치매 예방에 관한 조언과 정서적 지지를 받을 수 있습니다.',
+    to: '/chatbot',
   },
   {
-    title: '대화와 인지 자극',
-    body: '가족이나 지인과의 대화는 언어 자극과 정서적 안정에 모두 도움이 되는 활동입니다.',
-    note: '하루 한 번 안부 전화를 목표로 잡아보세요.',
+    icon: Leaf,
+    title: '맞춤 루틴 추천',
+    body: '설문 결과를 바탕으로 수면, 식단, 운동 등 일상 루틴을 추천하고 실천을 도와드립니다.',
+    to: '/routine',
+  },
+] as const
+
+const secondaryFeatureCards = [
+  {
+    icon: Gamepad2,
+    title: '인지훈련 게임',
+    body: '기억력 카드, 숫자 기억하기 등 다양한 인지훈련 게임으로 뇌를 활성화하세요.',
+    to: '/training',
+  },
+  {
+    icon: Brain,
+    title: '인지 건강 정보',
+    body: '인지 건강 관리, 생활 습관, 예방 방법 등을 알기 쉬운 안내로 제공합니다.',
+    to: '/information',
+  },
+  {
+    icon: Activity,
+    title: '활동 기록 관리',
+    body: '루틴 수행 기록, 인지훈련 결과 등을 한눈에 확인하고 건강 변화를 추적하세요.',
+    to: '/mypage',
+  },
+] as const
+
+const dementiaInfoCards = [
+  {
+    title: '초기 신호 살펴보기',
+    body: '최근 기억 저하, 반복 질문, 일정 혼동처럼 일상에서 먼저 보이는 변화를 가볍게 점검해보세요.',
+  },
+  {
+    title: '예방 생활습관 정리',
+    body: '수면, 식사, 운동, 대화 습관처럼 꾸준히 지키기 좋은 예방 포인트만 모아 보여드립니다.',
+  },
+  {
+    title: '가족이 도울 수 있는 방법',
+    body: '불안을 줄이는 말투, 안전한 환경 만들기, 병원 상담 전 준비사항을 쉽게 확인할 수 있습니다.',
+  },
+  {
+    title: '인지 건강 정보 한눈에 보기',
+    body: '복잡한 의학 용어 대신 생활 중심 설명으로 필요한 정보를 편안하게 이해할 수 있게 구성했습니다.',
   },
 ] as const
 
 export function HomePage() {
-  const [highlightIndex, setHighlightIndex] = useState(0)
-  const currentHighlight = cognitiveHighlights[highlightIndex]
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setHighlightIndex((currentIndex) =>
-        currentIndex === cognitiveHighlights.length - 1 ? 0 : currentIndex + 1
-      )
-    }, 3500)
-
-    return () => window.clearInterval(timer)
-  }, [])
+  const allFeatureCards = [...featureCards, ...secondaryFeatureCards]
 
   return (
     <main className="min-h-screen bg-base">
       <AppHeader />
       <section className="hero-surface">
-        <div className="page-shell relative z-10 grid gap-14 py-24 lg:grid-cols-[1fr_1fr] lg:items-center">
-          <div>
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2 text-base font-semibold text-teal shadow-card">
-              <span className="h-2 w-2 rounded-full bg-primary" />
-              AI 기반 치매 예방 관리 서비스
-            </div>
-            <h1 className="text-4xl font-extrabold leading-[1.2] tracking-[-0.03em] text-tealDark md:text-[50px]">
-              더 편안하게,
-              <br />
-              <span className="text-primary">더 오래 선명하게</span>
-              <br />
-              일상을 관리하세요.
-            </h1>
-            <p className="mt-6 max-w-[580px] text-base leading-8 text-contentMid md:text-lg">
-              HTML 시안의 분위기를 기반으로 전역 디자인을 재구성했습니다. 중요한 기능을
-              한눈에 찾고, 치매 정보와 인지 훈련, 챗봇 도움을 자연스럽게 이어줍니다.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button asLink className="px-8 py-4 text-lg" to="/login">
-                시작하기
-              </Button>
-              <Button asLink className="px-8 py-4 text-lg" to="/information" variant="secondary">
-                예방 정보 보기
-              </Button>
-            </div>
+        <div className="page-shell relative z-10 flex flex-col items-center py-24 text-center md:py-28 lg:py-32">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2 text-base font-semibold text-teal shadow-card">
+            <LogoMark className="h-8 w-8" iconClassName="h-4 w-4" />
+            AI 기반 치매 예방 서비스
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <SectionCard className="min-h-[160px] p-5 md:col-span-2">
-              <div className="mb-1 text-[28px]">🧠</div>
-              <Link
-                className="block transition-colors hover:text-inherit"
-                to="/information"
-              >
-                <h3 className="content-title text-[24px]">오늘의 인지 건강</h3>
-                <p className="content-note mt-0.5">인지 건강 정보를 가볍게 미리 확인할 수 있습니다.</p>
-                <p className="mt-2 text-sm font-semibold uppercase tracking-[0.08em] text-primary">
-                  Highlight {highlightIndex + 1}
-                </p>
-                <h4 className="mt-1.5 text-[19px] font-bold tracking-[-0.02em] text-tealDark">
-                  {currentHighlight.title}
-                </h4>
-                <p className="mt-1.5 text-[16px] leading-6 text-contentMid">{currentHighlight.body}</p>
-                <p className="mt-1 text-[15px] leading-6 text-contentLight">{currentHighlight.note}</p>
-                <p className="mt-2 text-[15px] font-semibold text-teal">인지 건강 페이지로 이동 →</p>
-              </Link>
-              <div className="mt-2 flex gap-2">
-                {cognitiveHighlights.map((_, index) => (
-                  <span
-                    key={`highlight-dot-${index}`}
-                    className={
-                      index === highlightIndex
-                        ? 'h-2.5 w-8 rounded-full bg-primary'
-                        : 'h-2.5 w-2.5 rounded-full bg-primaryLight'
-                    }
-                  />
-                ))}
-              </div>
-            </SectionCard>
-            <Link className="block" to="/routine">
-              <SectionCard className="min-h-[188px]">
-                <div className="mb-3 text-3xl">🌿</div>
-                <h3 className="content-title text-[24px]">예방 루틴</h3>
-                <p className="content-note mt-2">하루 습관을 부드럽게 이어줍니다.</p>
-              </SectionCard>
-            </Link>
-            <Link className="block" to="/chatbot">
-              <SectionCard className="min-h-[188px]">
-                <div className="mb-3 text-3xl">💬</div>
-                <h3 className="content-title text-[24px]">AI 상담</h3>
-                <p className="content-note mt-2">질문을 천천히 해도 괜찮습니다.</p>
-              </SectionCard>
-            </Link>
+          <h1 className="max-w-[820px] text-5xl font-extrabold leading-[1.15] tracking-[-0.04em] text-tealDark md:text-[72px]">
+            건강한 뇌를 위한
+            <br />
+            <span className="text-primary">일상의 동반자</span>
+          </h1>
+          <p className="mt-8 max-w-[900px] text-xl leading-10 text-contentMid md:text-[22px]">
+            LifeSync는 여러분의 생활습관을 분석하고, AI 맞춤 루틴과 인지훈련으로 치매
+            예방을 도와드립니다. 오늘부터 뇌 건강 관리를 시작해보세요.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <Button asLink className="min-w-[220px] px-8 py-4 text-lg" to="/login">
+              무료로 시작하기
+            </Button>
+            <Button asLink className="min-w-[220px] px-8 py-4 text-lg" to="/information" variant="secondary">
+              인지 건강 정보 보기
+            </Button>
           </div>
-        </div>
-      </section>
-      <section className="page-shell flex flex-col gap-8 py-16">
-        <div>
-          <div className="section-badge">핵심 기능</div>
-          <h2 className="section-title mt-4">복잡하지 않게, 필요한 기능만 먼저</h2>
-          <p className="section-subtitle mt-3 max-w-[760px]">
-            카드와 여백, 둥근 모서리, 세리프 타이틀을 기준으로 전체 화면 밀도를 낮췄습니다.
+          <p className="mt-10 text-base leading-8 text-contentLight">
+            본 서비스는 의료적 진단을 제공하지 않습니다. 건강 상담은 전문의에게 받으세요.
           </p>
         </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-          <DementiaInfoPreview />
-          <TrainingSummary />
-          <ChatbotPreview />
+      </section>
+      <section className="page-shell py-20 md:py-24">
+        <div className="mx-auto max-w-[820px] text-center">
+          <h2 className="section-title md:text-[64px]">주요 기능</h2>
+          <p className="section-subtitle mt-5 text-lg md:text-[22px]">
+            인지 건강 관리를 위한 기능을 한 곳에서 이용하세요
+          </p>
+        </div>
+        <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:auto-rows-fr">
+          {allFeatureCards.map((card) => (
+            <Link key={card.title} className="block h-full" to={card.to}>
+              <SectionCard className="flex h-full min-h-[280px] flex-col p-8 md:p-10">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primaryPale text-3xl">
+                  <card.icon className="h-8 w-8 text-primary" strokeWidth={2.2} />
+                </div>
+                <div className="mt-8 flex-1">
+                  <h3 className="content-title text-[24px] md:text-[26px]">{card.title}</h3>
+                  <p className="content-body mt-4 text-[18px] leading-9 text-contentLight">
+                    {card.body}
+                  </p>
+                </div>
+              </SectionCard>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="bg-primaryPale/45 py-20 md:py-24">
+        <div className="page-shell">
+          <div className="mx-auto max-w-[900px] text-center">
+            <h2 className="section-title">인지 건강 정보 미리 보기</h2>
+            <p className="section-subtitle mt-4 text-lg md:text-[22px]">
+              마지막 섹션은 정보 카드 중심으로 구성해 빠르게 읽고 바로 이동할 수 있게 정리했습니다.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {dementiaInfoCards.map((card) => (
+              <Link
+                key={card.title}
+                className="block transition-transform duration-200 hover:-translate-y-1"
+                to="/information"
+              >
+                <SectionCard className="min-h-[220px] border-primary/10 bg-surface/90">
+                  <div className="section-badge">인지 건강 정보</div>
+                  <h3 className="content-title mt-5 text-[24px]">{card.title}</h3>
+                  <p className="content-body mt-4 text-[18px] leading-9 text-contentLight">
+                    {card.body}
+                  </p>
+                  <p className="mt-5 text-base font-semibold text-teal">정보 페이지로 이동</p>
+                </SectionCard>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
       <AppFooter />

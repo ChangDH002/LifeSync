@@ -31,7 +31,19 @@ export function Button(props: ButtonProps) {
     )
   }
 
-  const { asLink: _asLink, to: _to, ...buttonProps } = props
+  const {
+    asLink,
+    to,
+    children: _children,
+    className: _className,
+    variant: _variant,
+    ...buttonProps
+  } = props
+  void asLink
+  void to
+  void _children
+  void _className
+  void _variant
 
   return (
     <button {...buttonProps} className={classes} type={props.type ?? 'button'}>

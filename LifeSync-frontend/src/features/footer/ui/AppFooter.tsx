@@ -4,6 +4,7 @@ import {
   FOOTER_SERVICE_LINKS,
   FOOTER_SUPPORT_ITEMS,
 } from '@/shared/constants'
+import { LogoMark } from '@/shared/ui'
 
 export function AppFooter() {
   return (
@@ -11,7 +12,7 @@ export function AppFooter() {
       <div className="mx-auto grid w-full max-w-6xl gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
           <div className="mb-4 flex items-center gap-3 font-serif text-2xl font-black tracking-[-0.02em] text-white">
-            <span className="logo-mark">🌿</span>
+            <LogoMark />
             LifeSync
           </div>
           <p className="text-sm leading-7 text-white/65">
@@ -47,9 +48,9 @@ export function AppFooter() {
           <h4 className="mb-4 text-sm font-semibold text-white">법적 고지</h4>
           <div className="flex flex-col gap-2">
             {FOOTER_POLICY_ITEMS.map((item) => (
-              <span key={item} className="footer-link">
-                {item}
-              </span>
+              <Link key={item.path} className="footer-link" to={item.path}>
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>

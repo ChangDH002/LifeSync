@@ -6,7 +6,7 @@ export function MypagePage() {
   return (
     <main className="min-h-screen bg-base">
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-5xl px-4 py-8 md:px-6">
+      <div className="page-shell py-10 md:py-12">
         <MypageSummary />
       </div>
       <AppFooter />

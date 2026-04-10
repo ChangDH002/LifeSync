@@ -3,4 +3,6 @@
  */
 
 export * from './Button'
+export * from './LegalDocumentLayout'
+export * from './LogoMark'
 export * from './SectionCard'
