@@ -1,1 +1,2 @@
-export * from './TrainingSummary'
+export * from './TrainingSummary';
+export * from './GameLayout';
