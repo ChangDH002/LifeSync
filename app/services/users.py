@@ -2,20 +2,9 @@ from typing import Any
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from passlib.context import CryptContext
 
+from app.core.password_hash import hash_password, verify_password
 from app.db import get_db
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(plain: str) -> str:
-    return pwd_context.hash(plain)
-
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
-
 
 async def get_user_by_email(email: str) -> dict[str, Any] | None:
     doc = await get_db().users.find_one({"email": email.lower()})
