@@ -10,24 +10,25 @@ dementia/
 ├── .env.example         # 환경 변수 예시
 ├── .gitignore
 ├── requirements.txt
-├── docs/
-│   └── PROJECT_STRUCTURE.md   # 본 문서
 └── app/
     ├── __init__.py
     ├── main.py          # FastAPI 앱, 미들웨어, lifespan, 라우터 마운트
     ├── db.py            # Motor 클라이언트, 연결/종료, 인덱스 생성
     ├── core/
     │   ├── __init__.py
-    │   └── config.py    # pydantic-settings (.env 로드)
+    │   ├── config.py    # pydantic-settings (.env 로드)
+    │   └── password_hash.py  # 비밀번호 해시/검증(bcrypt)
     ├── routers/
     │   ├── __init__.py
     │   └── auth.py      # /auth/* 엔드포인트
     ├── schemas/
     │   ├── __init__.py
-    │   └── user.py      # RegisterBody, LoginBody, UserOut
+    │   ├── auth.py      # RegisterBody, LoginBody (인증 요청 body)
+    │   ├── user.py      # UserPublic/UserDB 등 사용자 스키마
+    │   └── common.py    # 공통 메시지 응답 스키마(CommonResponse)
     └── services/
         ├── __init__.py
-        └── users.py     # 비밀번호 해시, 사용자 CRUD 조회
+        └── users.py     # 사용자 CRUD 조회(비밀번호 해시/검증은 core로 분리)
 ```
 
 ## 계층 역할
@@ -36,9 +37,12 @@ dementia/
 |------|------|
 | `app/main.py` | 앱 생성, `lifespan`에서 DB 연결, `SessionMiddleware`·`CORSMiddleware`, `auth` 라우터 prefix `/auth` |
 | `app/core/config.py` | `MONGODB_URL`, `DATABASE_NAME`, `SECRET_KEY`, `CORS_ORIGINS` 등 설정 싱글톤 `settings` |
+| `app/core/password_hash.py` | 비밀번호 bcrypt 해시/검증 유틸 |
 | `app/db.py` | `AsyncIOMotorClient`, `get_db()`, 기동 시 `ping` 및 `users` 컬렉션 인덱스 |
-| `app/schemas/user.py` | 요청/응답 Pydantic 모델 |
-| `app/services/users.py` | bcrypt 해시·검증, 이메일/아이디/ID 조회, 사용자 생성 |
+| `app/schemas/auth.py` | 인증 요청 body 모델(`RegisterBody`, `LoginBody`) |
+| `app/schemas/user.py` | 사용자 스키마(공개 정보/DB 모델/응답 별칭) |
+| `app/schemas/common.py` | 공통 메시지 응답 스키마 |
+| `app/services/users.py` | 이메일/아이디/ID 조회, 사용자 생성(비밀번호는 해시로 저장) |
 | `app/routers/auth.py` | HTTP 라우트 및 세션에 `user_id` 저장 |
 
 ## 환경 변수
