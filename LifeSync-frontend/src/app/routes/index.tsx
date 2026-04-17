@@ -5,14 +5,18 @@ import {
   ChatbotPage,
   HomePage,
   InformationPage,
+  JudgmentGamePage,
+  LanguageGamePage,
   LoginPage,
   MedicalNoticePage,
+  MemoryGamePage,
   MypagePage,
   NotFoundPage,
   PrivacyPolicyPage,
   RoutinePage,
   SettingsPage,
   TermsPage,
+  AttentionGamePage,
   TrainingPage,
 } from '@/pages'
 import { RequireAuth } from './RequireAuth'
@@ -63,6 +67,38 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <TrainingPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.trainingMemory,
+    element: (
+      <RequireAuth>
+        <MemoryGamePage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.trainingJudgment,
+    element: (
+      <RequireAuth>
+        <JudgmentGamePage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.trainingAttention,
+    element: (
+      <RequireAuth>
+        <AttentionGamePage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.trainingLanguage,
+    element: (
+      <RequireAuth>
+        <LanguageGamePage />
       </RequireAuth>
     ),
   },

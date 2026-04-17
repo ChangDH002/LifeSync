@@ -1,7 +1,7 @@
 /**
  * 인지훈련 도메인 Hook - 집중력(순서 따라가기)
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useCognitiveTraining = () => {
   const [sequence, setSequence] = useState<number[]>([]); // 정답 순서

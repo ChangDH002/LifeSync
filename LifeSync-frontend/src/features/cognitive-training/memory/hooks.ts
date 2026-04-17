@@ -1,85 +1,123 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react'
 
 interface Card {
-  id: number;
-  content: string;
-  isFlipped: boolean;
-  isMatched: boolean;
+  id: number
+  content: string
+  isFlipped: boolean
+  isMatched: boolean
 }
+
 export const useCognitiveTraining = () => {
-  // TODO: 인지훈련 로직 구현
-  const [cards, setCards] = useState<Card[]>([]);
-  const [flippedCards, setFlippedCards] = useState<number[]>([]);
-  const [isGameOver, setIsGameOver] = useState(false);
+  const [cards, setCards] = useState<Card[]>([])
+  const [flippedCards, setFlippedCards] = useState<number[]>([])
+  const [isGameOver, setIsGameOver] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(90)
+  const isTimeOver = timeLeft === 0 && !isGameOver
 
-  // 초기화
   const initGame = useCallback(() => {
-    const emojis = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍒'];
+    const emojis = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍒']
     const duplicatedCards = [...emojis, ...emojis]
-    .sort(() => Math.random() - 0.5)
-    .map((content, index) => ({
-      id: index,
-      content,
-      isFlipped: false,
-      isMatched: false,
-    }));
-    setCards(duplicatedCards);
-    setFlippedCards([]);
-    setIsGameOver(false);
-  }, []);
+      .sort(() => Math.random() - 0.5)
+      .map((content, index) => ({
+        id: index,
+        content,
+        isFlipped: false,
+        isMatched: false,
+      }))
 
-  //컴포넌트 마운트 시 게임 시작
+    setCards(duplicatedCards)
+    setFlippedCards([])
+    setIsGameOver(false)
+    setTimeLeft(90)
+  }, [])
+
   useEffect(() => {
-    initGame();
-  }, [initGame]);
+    initGame()
+  }, [initGame])
 
-  // 카드 클릭 핸들러
   const flipCard = (id: number) => {
-    if (flippedCards.length === 2 || cards[id].isFlipped || cards[id].isMatched) return;
+    const targetCard = cards.find((card) => card.id === id)
+
+    if (
+      !targetCard ||
+      isTimeOver ||
+      flippedCards.length === 2 ||
+      targetCard.isFlipped ||
+      targetCard.isMatched
+    ) {
+      return
+    }
 
     setCards(prev => prev.map(card => 
       card.id === id ? { ...card, isFlipped: true } : card
-    ));
-    setFlippedCards(prev => [...prev, id]);
-  };
+    ))
+    setFlippedCards(prev => [...prev, id])
+  }
 
-  // 짝 맞추기 검증 로직
   useEffect(() => {
     if (flippedCards.length === 2) {
-      const [firstId, secondId] = flippedCards;
+      const [firstId, secondId] = flippedCards
+      const firstCard = cards.find((card) => card.id === firstId)
+      const secondCard = cards.find((card) => card.id === secondId)
 
-      if (cards[firstId].content === cards[secondId].content) {//일치
+      if (!firstCard || !secondCard) {
+        setFlippedCards([])
+        return
+      }
+
+      if (firstCard.content === secondCard.content) {
         setCards(prev => prev.map(card => 
           card.id === firstId || card.id === secondId
            ? { ...card, isMatched: true } 
            : card
-        ));
-        setFlippedCards([]);
-      } else {//불일치
+        ))
+        setFlippedCards([])
+      } else {
         const timer = setTimeout(() => {
           setCards(prev => prev.map(card => 
             card.id === firstId || card.id === secondId
              ? { ...card, isFlipped: false }
              : card
-          ));
-          setFlippedCards([]);
-        }, 1000);
-        return () => clearTimeout(timer);
+          ))
+          setFlippedCards([])
+        }, 1000)
+
+        return () => clearTimeout(timer)
       }
     }
-  }, [flippedCards, cards]);
+  }, [flippedCards, cards])
 
-  // 게임 종료 조건 확인
   useEffect(() => {
     if (cards.length > 0 && cards.every(card => card.isMatched)) {
-      setIsGameOver(true);
+      setIsGameOver(true)
     }
-  }, [cards]);
+  }, [cards])
+
+  useEffect(() => {
+    if (cards.length === 0 || isGameOver || isTimeOver) {
+      return
+    }
+
+    const timer = window.setInterval(() => {
+      setTimeLeft((currentTime) => {
+        if (currentTime <= 1) {
+          window.clearInterval(timer)
+          return 0
+        }
+
+        return currentTime - 1
+      })
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [cards.length, isGameOver, isTimeOver])
 
   return {
     cards,
     flipCard,
     isGameOver,
-    resetGame: initGame
-  };
-};
+    isTimeOver,
+    resetGame: initGame,
+    timeLeft,
+  }
+}
