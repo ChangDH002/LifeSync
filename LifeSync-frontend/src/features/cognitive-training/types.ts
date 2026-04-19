@@ -2,10 +2,12 @@
  * 인지훈련 도메인 타입
  */
 
+export type TrainingCategory = 'memory' | 'attention' | 'judgment' | 'language'
+
 export interface TrainingGame {
   id: string
   name: string
-  category: 'memory' | 'attention' | 'judgment' | 'language'
+  category: TrainingCategory
   difficulty: number
 }
 
@@ -32,4 +34,20 @@ export interface TrainingHistory {
   gameName: string;
   score: number;
   rewardItem: string;
+}
+
+export interface TrainingParticipationSyncRequest {
+  gameCategory: TrainingCategory
+  gameName: string
+  eventType: 'participated'
+  occurredAt: string
+  attendanceCandidate: boolean
+  wateringChanceCandidate: boolean
+  metadata?: Record<string, string | number | boolean>
+}
+
+export interface TrainingParticipationSyncResponse {
+  attendanceMarked: boolean
+  wateringChanceGranted: boolean
+  dailyWateringChanceAvailable: boolean
 }

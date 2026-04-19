@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { ROUTE_PATHS } from '@/shared/config'
 import {
   AvatarPage,
+  AuthCallbackPage,
   ChatbotPage,
   HomePage,
   InformationPage,
@@ -15,6 +16,7 @@ import {
   PrivacyPolicyPage,
   RoutinePage,
   SettingsPage,
+  SignupPage,
   TermsPage,
   AttentionGamePage,
   TrainingPage,
@@ -29,6 +31,14 @@ export const router = createBrowserRouter([
   {
     path: ROUTE_PATHS.login,
     element: <LoginPage />,
+  },
+  {
+    path: ROUTE_PATHS.signup,
+    element: <SignupPage />,
+  },
+  {
+    path: `${ROUTE_PATHS.authCallback}/:provider`,
+    element: <AuthCallbackPage />,
   },
   {
     path: ROUTE_PATHS.mypage,

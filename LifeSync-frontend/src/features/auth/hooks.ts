@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react'
+import type { AuthSessionResponse } from './types'
 
 const AUTH_TOKEN_KEY = 'access_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
 const AUTH_EVENT_NAME = 'lifesync-auth-change'
 
 function subscribe(callback: () => void) {
@@ -33,8 +35,18 @@ export function useAuth() {
       localStorage.setItem(AUTH_TOKEN_KEY, nextToken)
       emitAuthChange()
     },
+    setSession(session: AuthSessionResponse) {
+      localStorage.setItem(AUTH_TOKEN_KEY, session.accessToken)
+
+      if (session.refreshToken) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, session.refreshToken)
+      }
+
+      emitAuthChange()
+    },
     logout() {
       localStorage.removeItem(AUTH_TOKEN_KEY)
+      localStorage.removeItem(REFRESH_TOKEN_KEY)
       emitAuthChange()
     },
   }

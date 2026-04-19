@@ -1,10 +1,15 @@
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
+import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
 
 export function LanguageGame() {
   const { quiz, shuffledChars, userAnswer, isCorrect, score, handleCharClick } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
+  const { reportParticipation } = useTrainingActivityReporter({
+    gameCategory: 'language',
+    gameName: '단어 완성하기',
+  })
 
   return (
     <div
@@ -54,7 +59,13 @@ export function LanguageGame() {
               'rounded-full border-2 border-gray-100 bg-white font-black text-gray-800 shadow-lg transition-all hover:border-primary active:scale-90',
               isMobile ? 'h-16 w-16 text-2xl' : 'h-24 w-24 text-4xl'
             )}
-            onClick={() => handleCharClick(char, idx)}
+            onClick={() => {
+              void reportParticipation({
+                trainingTitle: '단어 완성하기',
+                currentScore: score,
+              })
+              handleCharClick(char, idx)
+            }}
             type="button"
           >
             {char}

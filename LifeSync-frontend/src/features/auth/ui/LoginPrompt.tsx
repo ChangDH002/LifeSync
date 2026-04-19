@@ -2,33 +2,33 @@ import { FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTE_PATHS } from '@/shared/config'
 import { useAuth } from '../hooks'
-import { Button, LogoMark, SectionCard } from '@/shared/ui'
+import { Button } from '@/shared/ui'
+import { AuthFormCard } from './AuthFormCard'
+import { SocialAuthButtons } from './SocialAuthButtons'
 
 export function LoginPrompt() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login } = useAuth()
+  const { setSession } = useAuth()
   const redirectPath =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
     ROUTE_PATHS.mypage
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    login('demo-access-token')
+    setSession({ accessToken: 'demo-access-token' })
     navigate(redirectPath, { replace: true })
   }
 
   return (
-    <SectionCard className="w-full max-w-2xl rounded-[28px] px-8 py-10">
-      <div className="mb-8 flex items-center gap-3 font-serif text-2xl font-black tracking-[-0.02em] text-tealDark">
-        <LogoMark />
-        LifeSync
-      </div>
-      <div className="section-badge">Account</div>
-      <h1 className="section-title mt-4">편안하게 로그인하세요.</h1>
-      <p className="section-subtitle mt-3 max-w-[620px]">
-        큰 글씨와 또렷한 버튼, 단순한 입력 흐름을 기본으로 한 로그인 진입 화면입니다.
-      </p>
+    <AuthFormCard
+      badge="Account"
+      description="큰 글씨와 또렷한 버튼, 단순한 입력 흐름을 기본으로 한 로그인 진입 화면입니다."
+      footerLinkLabel="회원가입하기"
+      footerLinkTo={ROUTE_PATHS.signup}
+      footerPrompt="처음 오셨나요?"
+      title="편안하게 로그인하세요."
+    >
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <label className="block">
           <span className="mb-2 block text-base font-medium text-contentMid">이메일</span>
@@ -47,6 +47,15 @@ export function LoginPrompt() {
           </Button>
         </div>
       </form>
-    </SectionCard>
+
+      <div className="mt-8">
+        <div className="mb-4 flex items-center gap-4">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-sm font-medium uppercase tracking-[0.12em] text-contentLight">또는</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+        <SocialAuthButtons mode="login" />
+      </div>
+    </AuthFormCard>
   )
 }

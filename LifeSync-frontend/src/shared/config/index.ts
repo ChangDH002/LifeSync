@@ -11,6 +11,8 @@ export const APP_CONFIG = {
 export const ROUTE_PATHS = {
   home: '/',
   login: '/login',
+  signup: '/signup',
+  authCallback: '/auth/callback',
   mypage: '/mypage',
   settings: '/settings',
   avatar: '/avatar',

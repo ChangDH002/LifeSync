@@ -1,3 +1,4 @@
+import { BookOpen, Brain, Eye, Scale } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
@@ -11,6 +12,7 @@ const trainingMenus = [
     description: '카드 짝 맞추기',
     path: '/training/memory',
     color: 'bg-blue-500',
+    icon: Brain,
   },
   {
     id: 'judgment',
@@ -18,6 +20,7 @@ const trainingMenus = [
     description: '상황 판단 퀴즈',
     path: '/training/judgment',
     color: 'bg-green-500',
+    icon: Scale,
   },
   {
     id: 'attention',
@@ -25,6 +28,7 @@ const trainingMenus = [
     description: '순서 따라가기',
     path: '/training/attention',
     color: 'bg-orange-500',
+    icon: Eye,
   },
   {
     id: 'language',
@@ -32,6 +36,7 @@ const trainingMenus = [
     description: '단어 완성하기',
     path: '/training/language',
     color: 'bg-violet-500',
+    icon: BookOpen,
   },
 ] as const
 
@@ -69,8 +74,8 @@ export function TrainingHubSection() {
             onClick={() => navigate(menu.path)}
             type="button"
           >
-            <div className={cn(`mb-4 inline-block ${menu.color} text-white`, isMobile ? 'rounded-xl p-3' : 'rounded-2xl p-4')}>
-              <span className={cn('font-bold', isMobile ? 'text-xl' : 'text-2xl')}>{menu.title[0]}</span>
+            <div className={cn(`mb-4 inline-flex items-center justify-center ${menu.color} text-white`, isMobile ? 'rounded-xl p-3' : 'rounded-2xl p-4')}>
+              <menu.icon className={cn(isMobile ? 'h-7 w-7' : 'h-9 w-9')} strokeWidth={2.4} />
             </div>
             <h3 className={cn('font-black text-gray-900', isMobile ? 'text-xl' : 'text-2xl')}>{menu.title}</h3>
             <p className={cn('mt-2 font-medium text-gray-500', isMobile ? 'text-base leading-7' : 'text-lg')}>

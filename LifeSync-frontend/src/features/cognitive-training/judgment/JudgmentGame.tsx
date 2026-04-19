@@ -1,10 +1,15 @@
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
+import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
 
 export function JudgmentGame() {
   const { scenario, selectedIdx, handleSelect, nextScenario, isLast } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
+  const { reportParticipation } = useTrainingActivityReporter({
+    gameCategory: 'judgment',
+    gameName: '상황 판단 퀴즈',
+  })
 
   return (
     <div
@@ -42,7 +47,13 @@ export function JudgmentGame() {
                     ? (isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50')
                     : 'border-gray-100 bg-gray-50 opacity-60'
                 } ${isMobile ? 'p-4' : 'p-6'}`}
-              onClick={() => handleSelect(idx)}
+              onClick={() => {
+                void reportParticipation({
+                  trainingTitle: '상황 판단 퀴즈',
+                  scenarioId: scenario.id,
+                })
+                handleSelect(idx)
+              }}
               type="button"
             >
               <span className={`mr-4 flex shrink-0 items-center justify-center rounded-full font-bold

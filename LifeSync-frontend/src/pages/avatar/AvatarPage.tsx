@@ -6,7 +6,7 @@ export function AvatarPage() {
   return (
     <main className="min-h-screen bg-base">
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-5xl px-4 py-8 md:px-6">
+      <div className="page-shell mx-auto flex w-full max-w-[1320px] py-6 md:py-8">
         <AvatarSummary />
       </div>
       <AppFooter />

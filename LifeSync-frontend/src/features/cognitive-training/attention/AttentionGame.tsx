@@ -1,10 +1,16 @@
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
+import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
 
 export function AttentionGame() {
-  const { sequence, activeButton, isPlaying, handleButtonClick, start } = useCognitiveTraining()
+  const { activeButton, clickedButton, feedbackMessage, feedbackTone, sequence, isPlaying, handleButtonClick, start } =
+    useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
+  const { reportParticipation } = useTrainingActivityReporter({
+    gameCategory: 'attention',
+    gameName: '순서 따라가기',
+  })
 
   const buttons = [
     { id: 0, color: 'bg-red-500', activeColor: 'bg-red-300 shadow-[0_0_40px_rgba(239,68,68,0.8)]', label: '빨강' },
@@ -27,14 +33,29 @@ export function AttentionGame() {
               'rounded-full bg-primary font-bold text-white shadow-xl transition-transform hover:scale-105 active:scale-95',
               isMobile ? 'px-8 py-4 text-xl' : 'px-12 py-6 text-3xl'
             )}
-            onClick={start}
+            onClick={() => {
+              void reportParticipation({
+                trainingTitle: '순서 따라가기',
+              })
+              start()
+            }}
             type="button"
           >
             훈련 시작하기
           </button>
         ) : (
-          <div className={cn('font-bold text-gray-700', isMobile ? 'text-lg' : 'text-2xl')}>
-            {isPlaying ? "반짝이는 순서를 잘 기억하세요!" : "기억한 순서대로 누르세요!"}
+          <div className={cn('font-bold', isMobile ? 'text-lg' : 'text-2xl')}>
+            <div
+              className={cn(
+                feedbackTone === 'error'
+                  ? 'text-danger'
+                  : feedbackTone === 'success'
+                    ? 'text-success'
+                    : 'text-gray-700',
+              )}
+            >
+              {feedbackMessage}
+            </div>
             <div className="mt-2 text-primary">현재 단계: {sequence.length}</div>
           </div>
         )}
@@ -42,23 +63,53 @@ export function AttentionGame() {
 
       <div className={cn('grid grid-cols-2 aspect-square', isMobile ? 'gap-3' : isWeb ? 'mx-auto max-w-[720px] gap-6' : 'gap-5')}>
         {buttons.map((btn) => (
+          (() => {
+            const isComputerActive = activeButton === btn.id
+            const isUserClicked = clickedButton === btn.id
+            const feedbackClass =
+              isUserClicked && feedbackTone === 'error'
+                ? 'ring-8 ring-danger/35 scale-[0.96] brightness-75'
+                : isUserClicked
+                  ? 'ring-8 ring-white/60 scale-[0.96] brightness-110'
+                  : ''
+
+            return (
           <button
             key={btn.id}
             disabled={isPlaying || sequence.length === 0}
-            className={`relative flex items-center justify-center rounded-3xl transition-all duration-200
-              ${activeButton === btn.id ? btn.activeColor : `${btn.color} opacity-80`}
-              ${isPlaying ? 'cursor-default' : 'cursor-pointer hover:opacity-100 active:scale-90'}
-              ${isMobile ? 'min-h-[110px]' : isWeb ? 'min-h-[220px]' : 'min-h-[170px]'}
-            `}
-            onClick={() => handleButtonClick(btn.id)}
+            className={cn(
+              'relative flex items-center justify-center rounded-3xl transition-all duration-200',
+              isComputerActive ? btn.activeColor : `${btn.color} opacity-80`,
+              feedbackClass,
+              isPlaying ? 'cursor-default' : 'cursor-pointer hover:opacity-100 active:scale-90',
+              isMobile ? 'min-h-[110px]' : isWeb ? 'min-h-[220px]' : 'min-h-[170px]',
+            )}
+            onClick={() => {
+              void reportParticipation({
+                trainingTitle: '순서 따라가기',
+                currentStage: sequence.length,
+              })
+              handleButtonClick(btn.id)
+            }}
             type="button"
           >
             <span className={cn('font-black text-white/40', isMobile ? 'text-lg' : 'text-2xl')}>{btn.label}</span>
             
-            {activeButton === btn.id && (
+            {isComputerActive && (
               <div className="absolute inset-0 rounded-3xl bg-white/30 animate-pulse" />
             )}
+
+            {isUserClicked ? (
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-3xl border-4',
+                  feedbackTone === 'error' ? 'border-white/80 bg-black/10' : 'border-white/90 bg-white/15',
+                )}
+              />
+            ) : null}
           </button>
+            )
+          })()
         ))}
       </div>
 

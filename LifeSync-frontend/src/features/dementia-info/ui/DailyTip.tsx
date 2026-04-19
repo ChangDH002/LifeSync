@@ -2,8 +2,7 @@ import React from 'react';
 
 export function DailyTip() {
   return (
-    // StyleGuide: 시니어 친화적 여백, 부드러운 surface 배경과 primary 경계선 활용
-    <div className="w-full max-w-[800px] mx-auto bg-surface border-2 border-primaryPale rounded-[20px] p-[24px] md:p-[30px] shadow-sm flex flex-col md:flex-row items-start gap-4 mb-12">
+    <div className="w-full max-w-[800px] mx-auto bg-surface border-2 border-primaryPale rounded-[20px] p-[24px] md:p-[30px] shadow-sm flex flex-col md:flex-row items-start gap-4 mb-4">
       <div className="text-[40px] md:text-[50px] leading-none">💡</div>
       <div>
         <h3 className="mt-0 mb-2 text-[22px] font-bold text-tealDark">

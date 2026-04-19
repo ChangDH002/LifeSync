@@ -1,53 +1,105 @@
 /**
  * 인지훈련 도메인 Hook - 집중력(순서 따라가기)
  */
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react'
 
 export const useCognitiveTraining = () => {
-  const [sequence, setSequence] = useState<number[]>([]); // 정답 순서
-  const [userSequence, setUserSequence] = useState<number[]>([]); // 사용자 입력
-  const [isPlaying, setIsPlaying] = useState(false); // 컴퓨터가 시연 중인지 여부
-  const [activeButton, setActiveButton] = useState<number | null>(null); // 현재 하이라이트된 버튼
+  const [sequence, setSequence] = useState<number[]>([])
+  const [userSequence, setUserSequence] = useState<number[]>([])
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [activeButton, setActiveButton] = useState<number | null>(null)
+  const [clickedButton, setClickedButton] = useState<number | null>(null)
+  const [feedbackTone, setFeedbackTone] = useState<'default' | 'success' | 'error'>('default')
+  const [feedbackMessage, setFeedbackMessage] = useState('훈련 시작하기를 눌러주세요.')
 
-  // 다음 단계 추가
+  const showSequence = useCallback(async (nextSequence: number[]) => {
+    setIsPlaying(true)
+    setFeedbackTone('default')
+    setFeedbackMessage('반짝이는 순서를 잘 기억하세요!')
+
+    for (const buttonId of nextSequence) {
+      await new Promise((resolve) => window.setTimeout(resolve, 550))
+      setActiveButton(buttonId)
+      await new Promise((resolve) => window.setTimeout(resolve, 380))
+      setActiveButton(null)
+    }
+
+    setIsPlaying(false)
+    setFeedbackMessage('기억한 순서대로 버튼을 눌러보세요!')
+  }, [])
+
   const nextLevel = useCallback(() => {
-    const nextNum = Math.floor(Math.random() * 4); // 4개의 버튼 중 하나
-    setSequence(prev => [...prev, nextNum]);
-    setUserSequence([]);
-    showSequence([...sequence, nextNum]);
-  }, [sequence]);
+    const nextNumber = Math.floor(Math.random() * 4)
 
-  // 컴퓨터가 순서를 보여주는 로직
-  const showSequence = async (seq: number[]) => {
-    setIsPlaying(true);
-    for (let i = 0; i < seq.length; i++) {
-      await new Promise(res => setTimeout(res, 600)); // 대기
-      setActiveButton(seq[i]); // 하이라이트 ON
-      await new Promise(res => setTimeout(res, 400));
-      setActiveButton(null); // 하이라이트 OFF
-    }
-    setIsPlaying(false);
-  };
+    setSequence((previousSequence) => {
+      const nextSequence = [...previousSequence, nextNumber]
+      setUserSequence([])
+      void showSequence(nextSequence)
+      return nextSequence
+    })
+  }, [showSequence])
 
-  // 사용자 클릭 핸들러
   const handleButtonClick = (id: number) => {
-    if (isPlaying) return;
+    if (isPlaying || sequence.length === 0) return
 
-    const nextUserSeq = [...userSequence, id];
-    setUserSequence(nextUserSeq);
+    setClickedButton(id)
+    window.setTimeout(() => setClickedButton(null), 220)
 
-    // 정답 확인
+    const nextUserSequence = [...userSequence, id]
+    setUserSequence(nextUserSequence)
+
     if (id !== sequence[userSequence.length]) {
-      alert("틀렸습니다! 다시 시작합니다.");
-      setSequence([]);
-      return;
+      setFeedbackTone('error')
+      setFeedbackMessage('조금 달랐어요. 처음부터 다시 시작해볼게요.')
+
+      window.setTimeout(() => {
+        setSequence([])
+        setUserSequence([])
+        setClickedButton(null)
+        setFeedbackTone('default')
+        setFeedbackMessage('훈련 시작하기를 눌러주세요.')
+      }, 700)
+      return
     }
 
-    // 단계 완료 확인
-    if (nextUserSeq.length === sequence.length) {
-      setTimeout(() => nextLevel(), 1000);
-    }
-  };
+    if (nextUserSequence.length === sequence.length) {
+      setFeedbackTone('success')
+      setFeedbackMessage('좋아요! 정확했어요. 다음 단계로 넘어갑니다.')
 
-  return { sequence, activeButton, isPlaying, handleButtonClick, start: nextLevel };
-};
+      window.setTimeout(() => {
+        setClickedButton(null)
+        nextLevel()
+      }, 700)
+      return
+    }
+
+    setFeedbackTone('success')
+    setFeedbackMessage('정확해요! 이어서 다음 색도 눌러보세요.')
+
+    window.setTimeout(() => {
+      setClickedButton(null)
+      setFeedbackTone('default')
+      setFeedbackMessage('기억한 순서대로 버튼을 눌러보세요!')
+    }, 350)
+  }
+
+  const start = useCallback(() => {
+    setSequence([])
+    setUserSequence([])
+    setClickedButton(null)
+    setFeedbackTone('default')
+    setFeedbackMessage('반짝이는 순서를 잘 기억하세요!')
+    nextLevel()
+  }, [nextLevel])
+
+  return {
+    activeButton,
+    clickedButton,
+    feedbackMessage,
+    feedbackTone,
+    handleButtonClick,
+    isPlaying,
+    sequence,
+    start,
+  }
+}

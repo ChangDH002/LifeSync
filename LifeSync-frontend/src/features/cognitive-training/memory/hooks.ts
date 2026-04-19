@@ -7,11 +7,21 @@ interface Card {
   isMatched: boolean
 }
 
+interface CardFeedback {
+  cardIds: number[]
+  type: 'match' | 'mismatch' | null
+}
+
+const PREVIEW_DURATION = 5
+
 export const useCognitiveTraining = () => {
   const [cards, setCards] = useState<Card[]>([])
   const [flippedCards, setFlippedCards] = useState<number[]>([])
   const [isGameOver, setIsGameOver] = useState(false)
   const [timeLeft, setTimeLeft] = useState(90)
+  const [feedback, setFeedback] = useState<CardFeedback>({ cardIds: [], type: null })
+  const [isPreviewing, setIsPreviewing] = useState(true)
+  const [previewSecondsLeft, setPreviewSecondsLeft] = useState(PREVIEW_DURATION)
   const isTimeOver = timeLeft === 0 && !isGameOver
 
   const initGame = useCallback(() => {
@@ -21,7 +31,7 @@ export const useCognitiveTraining = () => {
       .map((content, index) => ({
         id: index,
         content,
-        isFlipped: false,
+        isFlipped: true,
         isMatched: false,
       }))
 
@@ -29,6 +39,9 @@ export const useCognitiveTraining = () => {
     setFlippedCards([])
     setIsGameOver(false)
     setTimeLeft(90)
+    setFeedback({ cardIds: [], type: null })
+    setIsPreviewing(true)
+    setPreviewSecondsLeft(PREVIEW_DURATION)
   }, [])
 
   useEffect(() => {
@@ -40,6 +53,7 @@ export const useCognitiveTraining = () => {
 
     if (
       !targetCard ||
+      isPreviewing ||
       isTimeOver ||
       flippedCards.length === 2 ||
       targetCard.isFlipped ||
@@ -66,13 +80,21 @@ export const useCognitiveTraining = () => {
       }
 
       if (firstCard.content === secondCard.content) {
+        setFeedback({ cardIds: [firstId, secondId], type: 'match' })
         setCards(prev => prev.map(card => 
           card.id === firstId || card.id === secondId
            ? { ...card, isMatched: true } 
            : card
         ))
         setFlippedCards([])
+
+        const timer = window.setTimeout(() => {
+          setFeedback({ cardIds: [], type: null })
+        }, 650)
+
+        return () => window.clearTimeout(timer)
       } else {
+        setFeedback({ cardIds: [firstId, secondId], type: 'mismatch' })
         const timer = setTimeout(() => {
           setCards(prev => prev.map(card => 
             card.id === firstId || card.id === secondId
@@ -80,6 +102,7 @@ export const useCognitiveTraining = () => {
              : card
           ))
           setFlippedCards([])
+          setFeedback({ cardIds: [], type: null })
         }, 1000)
 
         return () => clearTimeout(timer)
@@ -94,7 +117,30 @@ export const useCognitiveTraining = () => {
   }, [cards])
 
   useEffect(() => {
-    if (cards.length === 0 || isGameOver || isTimeOver) {
+    if (!isPreviewing) {
+      return
+    }
+
+    if (previewSecondsLeft <= 0) {
+      setIsPreviewing(false)
+      setCards((previousCards) =>
+        previousCards.map((card) => ({
+          ...card,
+          isFlipped: false,
+        })),
+      )
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setPreviewSecondsLeft((currentSeconds) => currentSeconds - 1)
+    }, 1000)
+
+    return () => window.clearTimeout(timer)
+  }, [isPreviewing, previewSecondsLeft])
+
+  useEffect(() => {
+    if (cards.length === 0 || isGameOver || isTimeOver || isPreviewing) {
       return
     }
 
@@ -110,13 +156,17 @@ export const useCognitiveTraining = () => {
     }, 1000)
 
     return () => window.clearInterval(timer)
-  }, [cards.length, isGameOver, isTimeOver])
+  }, [cards.length, isGameOver, isPreviewing, isTimeOver])
 
   return {
     cards,
     flipCard,
     isGameOver,
+    isPreviewing,
     isTimeOver,
+    feedback,
+    flippedCards,
+    previewSecondsLeft,
     resetGame: initGame,
     timeLeft,
   }
