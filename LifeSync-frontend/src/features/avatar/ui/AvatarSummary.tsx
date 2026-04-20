@@ -1,14 +1,33 @@
-import { Droplets, Menu, MoveLeft, ShoppingBag, Sparkles } from 'lucide-react'
+import { Droplets, LoaderCircle, Menu, MoveLeft, ShoppingBag, Sparkles } from 'lucide-react'
 import soilImage from '@/shared/assets/trees/soil.svg'
 import { Button, SectionCard } from '@/shared/ui'
 import { useAvatar } from '../hooks'
 
 export function AvatarSummary() {
-  const { avatar, currentStageAsset, isMaxStage, nextStageExperienceGoal, progressWithinStage, waterTree } =
-    useAvatar()
+  const {
+    avatar,
+    canWaterToday,
+    currentStageAsset,
+    error,
+    isLoading,
+    isMaxStage,
+    isRemoteMode,
+    isWatering,
+    nextStageExperienceGoal,
+    progressWithinStage,
+    statusMessage,
+    waterTree,
+  } = useAvatar()
   const treeImageClassName = isMaxStage
     ? 'max-h-full max-w-full scale-[1.03] object-contain drop-shadow-[0_18px_30px_rgba(45,110,107,0.2)] transition-transform duration-500'
     : 'max-h-full max-w-full object-contain drop-shadow-[0_14px_24px_rgba(45,110,107,0.16)] transition-transform duration-500'
+  const growthStatusLabel = isLoading
+    ? '상태 불러오는 중'
+    : isRemoteMode
+      ? canWaterToday
+        ? '물 주기 가능'
+        : '오늘 물주기 완료'
+      : '로컬 성장 모드'
 
   const statusCards = [
     {
@@ -19,7 +38,10 @@ export function AvatarSummary() {
     {
       label: '오늘의 성장 포인트',
       value: `총 ${avatar.experience} XP`,
-      note: `물을 준 횟수 ${avatar.waterCount}회가 차곡차곡 반영되고 있어요.`,
+      note:
+        error ??
+        statusMessage ??
+        `물을 준 횟수 ${avatar.waterCount}회가 차곡차곡 반영되고 있어요.`,
     },
   ]
 
@@ -63,18 +85,18 @@ export function AvatarSummary() {
                 </SectionCard>
               ))}
 
-                <SectionCard className="rounded-[24px] border-white/60 bg-white/75 p-5 shadow-card">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold tracking-[0.1em] text-primary">경험치</p>
-                      <p className="mt-2 text-xl font-extrabold tracking-[-0.02em] text-tealDark">
-                        {avatar.experience} / {avatar.maxExperience} XP
-                      </p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primaryPale text-primary">
-                      <Sparkles className="h-6 w-6" />
-                    </div>
+              <SectionCard className="rounded-[24px] border-white/60 bg-white/75 p-5 shadow-card">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold tracking-[0.1em] text-primary">경험치</p>
+                    <p className="mt-2 text-xl font-extrabold tracking-[-0.02em] text-tealDark">
+                      {avatar.experience} / {avatar.maxExperience} XP
+                    </p>
                   </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primaryPale text-primary">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                </div>
                 <div className="mt-4 h-3 overflow-hidden rounded-full bg-primaryPale">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-primary to-teal transition-[width] duration-500"
@@ -84,7 +106,7 @@ export function AvatarSummary() {
                 <p className="mt-3 text-sm leading-7 text-contentMid">
                   {isMaxStage
                     ? '최종 성장 단계에 도달해서 이제는 건강한 상태를 유지하는 중이에요.'
-                    : `다음 단계까지 ${nextStageExperienceGoal - avatar.experience} XP 남았어요.`}
+                    : `다음 단계까지 ${Math.max(nextStageExperienceGoal - avatar.experience, 0)} XP 남았어요.`}
                 </p>
               </SectionCard>
             </div>
@@ -98,7 +120,7 @@ export function AvatarSummary() {
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
                     성장 요약
                   </p>
-                  <p className="mt-1 text-lg font-bold text-tealDark">물 주기 가능</p>
+                  <p className="mt-1 text-lg font-bold text-tealDark">{growthStatusLabel}</p>
                 </div>
               </div>
 
@@ -148,6 +170,10 @@ export function AvatarSummary() {
                     <p className="mt-2 text-sm leading-7 text-content md:text-base">
                       {currentStageAsset.description}
                     </p>
+                    {statusMessage ? (
+                      <p className="mt-2 text-sm leading-7 text-contentMid">{statusMessage}</p>
+                    ) : null}
+                    {error ? <p className="mt-2 text-sm font-medium leading-7 text-danger">{error}</p> : null}
                   </div>
 
                   <div className="flex shrink-0 items-end gap-3 self-end">
@@ -158,10 +184,11 @@ export function AvatarSummary() {
 
                     <Button
                       className="min-h-[56px] rounded-[22px] px-5 shadow-cardLg md:min-h-[62px] md:px-7"
-                      onClick={waterTree}
+                      disabled={isLoading || isWatering || !canWaterToday}
+                      onClick={() => void waterTree()}
                     >
-                      <Droplets className="mr-2 h-5 w-5" />
-                      물주기
+                      {isWatering ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <Droplets className="mr-2 h-5 w-5" />}
+                      {isLoading ? '불러오는 중...' : isWatering ? '반영 중...' : canWaterToday ? '물주기' : '오늘 완료'}
                     </Button>
                   </div>
                 </div>

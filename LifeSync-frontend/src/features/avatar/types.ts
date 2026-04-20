@@ -14,6 +14,7 @@ export interface Avatar {
   stage: number
   maxStage: number
   treeType: TreeType
+  dailyWateringChanceAvailable?: boolean
 }
 
 export interface AvatarItem {
@@ -28,4 +29,11 @@ export interface TreeStageAsset {
   imageSrc: string
   title: string
   description: string
+}
+
+export interface WaterTreeResponse {
+  used: boolean
+  wateringChanceRemaining?: number
+  expGained: number
+  avatar: Avatar
 }

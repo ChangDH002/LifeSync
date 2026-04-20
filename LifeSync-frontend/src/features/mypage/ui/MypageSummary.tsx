@@ -17,33 +17,27 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
 import { Button, SectionCard } from '@/shared/ui'
+import { useMypage } from '../hooks'
+import type { MypageActivityType } from '../types'
 
-const summaryCards = [
+const summaryCardDefinitions = [
   {
     title: '연속 달성',
-    value: '5',
-    caption: '일 연속',
     icon: Flame,
     iconColor: 'text-secondary',
   },
   {
     title: '오늘 루틴',
-    value: '2/3',
-    caption: '완료',
     icon: CalendarCheck2,
     iconColor: 'text-primary',
   },
   {
     title: '주간 달성률',
-    value: '68%',
-    caption: '이번 주',
     icon: Activity,
     iconColor: 'text-blue-500',
   },
   {
     title: '인지훈련',
-    value: '4',
-    caption: '게임 완료',
     icon: Brain,
     iconColor: 'text-violet-500',
   },
@@ -70,65 +64,75 @@ const quickActions = [
   },
 ] as const
 
-const recentActivities = [
-  {
-    title: '아침 산책 루틴 완료',
-    detail: '오늘 오전 8:10',
-    toneClassName: 'bg-primaryPale text-tealDark',
-  },
-  {
-    title: '기억력 카드 게임 플레이',
-    detail: '어제 오후 7:30',
-    toneClassName: 'bg-surface text-contentMid',
-  },
-  {
-    title: '수면 습관 설문 저장',
-    detail: '어제 오후 6:05',
-    toneClassName: 'bg-surface text-contentMid',
-  },
-] as const
-
 const tabItems = [
   {
     id: 'survey',
     label: '설문 결과',
     icon: ClipboardList,
-    heading: '생활습관 설문 요약',
-    description:
-      '최근 설문을 기준으로 수면 리듬과 가벼운 운동 습관은 안정적이지만, 대화 빈도와 수분 섭취는 조금 더 챙기면 좋습니다.',
-    bullets: ['수면 규칙성 양호', '하루 물 섭취량 보완 필요', '주 4회 이상 산책 유지 중'],
   },
   {
     id: 'routine',
     label: '루틴 기록',
     icon: CalendarCheck2,
-    heading: '이번 주 루틴 진행 현황',
-    description:
-      '이번 주에는 총 9개의 루틴 중 6개를 완료했습니다. 저녁 스트레칭과 취침 전 화면 줄이기 루틴이 가장 잘 유지되고 있습니다.',
-    bullets: ['저녁 스트레칭 3회 완료', '식후 산책 2회 완료', '취침 전 화면 줄이기 1회 완료'],
   },
   {
     id: 'training',
     label: '인지훈련',
     icon: Brain,
-    heading: '인지훈련 요약',
-    description:
-      '최근에는 기억력 카드와 순서 맞추기 게임을 중심으로 진행하고 있습니다. 평균 반응 속도는 지난주보다 조금 더 좋아졌습니다.',
-    bullets: ['기억력 카드 3회 플레이', '순서 맞추기 1회 플레이', '평균 정확도 82%'],
   },
 ] as const
 
 type TabId = (typeof tabItems)[number]['id']
 
+function getRecentActivityTone(activityType: MypageActivityType) {
+  if (activityType === 'routine') {
+    return 'bg-primaryPale text-tealDark'
+  }
+
+  if (activityType === 'training') {
+    return 'bg-violet-50 text-violet-700'
+  }
+
+  if (activityType === 'survey') {
+    return 'bg-surface text-contentMid'
+  }
+
+  return 'bg-surface text-contentMid'
+}
+
 export function MypageSummary() {
   const [activeTab, setActiveTab] = useState<TabId>('survey')
   const navigate = useNavigate()
   const { logout } = useAuth()
+  const { summary: mypageSummary, isLoading, isFallback, error } = useMypage()
 
-  const activeTabContent = tabItems.find((item) => item.id === activeTab) ?? tabItems[0]
-  const completedRoutines = 2
-  const totalRoutines = 3
-  const routineProgressWidth = `${(completedRoutines / totalRoutines) * 100}%`
+  const activeTabConfig = tabItems.find((item) => item.id === activeTab) ?? tabItems[0]
+  const activeTabContent = mypageSummary.tabs[activeTab]
+  const completedRoutines = mypageSummary.summary.todayRoutineCompleted
+  const totalRoutines = mypageSummary.summary.todayRoutineTotal
+  const routineProgressWidth = `${(completedRoutines / Math.max(totalRoutines, 1)) * 100}%`
+  const summaryCards = [
+    {
+      ...summaryCardDefinitions[0],
+      value: String(mypageSummary.summary.streakDays),
+      caption: '일 연속',
+    },
+    {
+      ...summaryCardDefinitions[1],
+      value: `${mypageSummary.summary.todayRoutineCompleted}/${mypageSummary.summary.todayRoutineTotal}`,
+      caption: '완료',
+    },
+    {
+      ...summaryCardDefinitions[2],
+      value: `${mypageSummary.summary.weeklyAchievementRate}%`,
+      caption: '이번 주',
+    },
+    {
+      ...summaryCardDefinitions[3],
+      value: String(mypageSummary.summary.trainingCompletedCount),
+      caption: '게임 완료',
+    },
+  ]
 
   const handleLogout = () => {
     logout()
@@ -144,6 +148,10 @@ export function MypageSummary() {
         <p className="mt-4 text-xl leading-9 text-contentMid">
           대시보드와 개인 활동 기록을 이곳에서 함께 확인할 수 있습니다.
         </p>
+        {isLoading ? <p className="mt-3 text-base text-contentLight">마이페이지 데이터를 불러오는 중입니다.</p> : null}
+        {!isLoading && (isFallback || error) ? (
+          <p className="mt-3 text-base text-contentLight">{error}</p>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-6">
@@ -155,17 +163,19 @@ export function MypageSummary() {
               </div>
               <div>
                 <h2 className="text-3xl font-extrabold tracking-[-0.03em] text-tealDark">
-                  안녕하세요, 강민님!
+                  안녕하세요, {mypageSummary.user.name}님!
                 </h2>
                 <p className="mt-2 text-lg leading-8 text-contentMid">
                   오늘도 건강한 하루를 시작해볼까요?
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-card">
-              <ClipboardList className="h-4 w-4" strokeWidth={2.2} />
-              설문 업데이트 필요
-            </div>
+            {mypageSummary.survey.needsUpdate ? (
+              <div className="flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-card">
+                <ClipboardList className="h-4 w-4" strokeWidth={2.2} />
+                설문 업데이트 필요
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-6 rounded-[24px] border border-primary/20 bg-surface/60 p-6">
@@ -176,10 +186,10 @@ export function MypageSummary() {
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold tracking-[-0.02em] text-tealDark">
-                    생활습관 설문을 작성해주세요
+                    {mypageSummary.survey.bannerTitle}
                   </h3>
                   <p className="mt-1 text-lg leading-8 text-contentMid">
-                    설문을 통해 현재 상태를 파악하고 맞춤형 루틴 추천을 받아보세요.
+                    {mypageSummary.survey.bannerDescription}
                   </p>
                 </div>
               </div>
@@ -198,10 +208,10 @@ export function MypageSummary() {
               </div>
               <div>
                 <h2 className="text-3xl font-extrabold tracking-[-0.03em] text-tealDark">
-                  강민 이
+                  {mypageSummary.user.name}
                 </h2>
-                <p className="mt-1 text-xl text-contentMid">jvmmf310@gmail.com</p>
-                <p className="mt-1 text-lg text-contentLight">가입 1분 미만 후</p>
+                <p className="mt-1 text-xl text-contentMid">{mypageSummary.user.email}</p>
+                <p className="mt-1 text-lg text-contentLight">{mypageSummary.user.joinedLabel}</p>
               </div>
             </div>
 
@@ -324,8 +334,8 @@ export function MypageSummary() {
               </p>
             </div>
             <div className="flex items-center gap-2 rounded-full bg-primaryPale px-4 py-2 text-sm font-semibold text-primary">
-              <activeTabContent.icon className="h-4 w-4" strokeWidth={2.2} />
-              최근 갱신
+              <activeTabConfig.icon className="h-4 w-4" strokeWidth={2.2} />
+              {isFallback ? '예시 데이터' : '연동 데이터'}
               <ChevronDown className="h-4 w-4" strokeWidth={2.2} />
             </div>
           </div>
@@ -343,12 +353,12 @@ export function MypageSummary() {
 
         <SectionCard className="p-8">
           <h2 className="text-2xl font-bold tracking-[-0.02em] text-tealDark">최근 활동</h2>
-          {recentActivities.length > 0 ? (
+          {mypageSummary.recentActivities.length > 0 ? (
             <div className="mt-6 grid gap-4">
-              {recentActivities.map((activity) => (
+              {mypageSummary.recentActivities.map((activity) => (
                 <div
                   key={`${activity.title}-${activity.detail}`}
-                  className={`rounded-[22px] border border-border px-5 py-5 ${activity.toneClassName}`}
+                  className={`rounded-[22px] border border-border px-5 py-5 ${getRecentActivityTone(activity.type)}`}
                 >
                   <p className="text-xl font-semibold tracking-[-0.02em]">{activity.title}</p>
                   <p className="mt-1 text-base opacity-80">{activity.detail}</p>

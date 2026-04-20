@@ -2,13 +2,14 @@
  * 아바타 도메인 Hook
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ginkgoStage1 from '@/shared/assets/trees/ginkgo/ginkgo (1).svg'
 import ginkgoStage2 from '@/shared/assets/trees/ginkgo/ginkgo (2).svg'
 import ginkgoStage3 from '@/shared/assets/trees/ginkgo/ginkgo (3).svg'
 import ginkgoStage4 from '@/shared/assets/trees/ginkgo/ginkgo (4).svg'
 import ginkgoStage5 from '@/shared/assets/trees/ginkgo/ginkgo (5).svg'
 import ginkgoStage6 from '@/shared/assets/trees/ginkgo/ginkgo (6).svg'
+import { avatarApi } from './api'
 import type { Avatar, TreeStageAsset } from './types'
 
 const GINKGO_STAGE_ASSETS: TreeStageAsset[] = [
@@ -65,30 +66,124 @@ const INITIAL_AVATAR: Avatar = {
   stage: 1,
   maxStage: MAX_STAGE,
   treeType: 'ginkgo',
+  dailyWateringChanceAvailable: true,
+}
+
+function normalizeAvatar(payload: Partial<Avatar>): Avatar {
+  return {
+    ...INITIAL_AVATAR,
+    ...payload,
+    stage: Math.min(Math.max(payload.stage ?? INITIAL_AVATAR.stage, 1), MAX_STAGE),
+    maxStage: payload.maxStage ?? MAX_STAGE,
+    maxExperience: payload.maxExperience ?? MAX_EXPERIENCE,
+    dailyWateringChanceAvailable: payload.dailyWateringChanceAvailable ?? true,
+    level: payload.level ?? payload.stage ?? INITIAL_AVATAR.level,
+  }
+}
+
+function applyLocalWatering(currentAvatar: Avatar) {
+  const nextExperience = Math.min(currentAvatar.experience + EXPERIENCE_PER_WATER, currentAvatar.maxExperience)
+  const nextStage = Math.min(
+    Math.floor(nextExperience / EXPERIENCE_PER_STAGE) + 1,
+    currentAvatar.maxStage,
+  )
+
+  return {
+    ...currentAvatar,
+    experience: nextExperience,
+    waterCount: currentAvatar.waterCount + 1,
+    stage: nextStage,
+    level: nextStage,
+  }
 }
 
 export const useAvatar = () => {
   const [avatar, setAvatar] = useState<Avatar>(INITIAL_AVATAR)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRemoteMode, setIsRemoteMode] = useState(false)
+  const [isWatering, setIsWatering] = useState(false)
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const waterTree = () => {
-    setAvatar((currentAvatar) => {
-      const nextExperience = Math.min(
-        currentAvatar.experience + EXPERIENCE_PER_WATER,
-        currentAvatar.maxExperience,
-      )
-      const nextStage = Math.min(
-        Math.floor(nextExperience / EXPERIENCE_PER_STAGE) + 1,
-        currentAvatar.maxStage,
-      )
+  useEffect(() => {
+    let isMounted = true
 
-      return {
-        ...currentAvatar,
-        experience: nextExperience,
-        waterCount: currentAvatar.waterCount + 1,
-        stage: nextStage,
-        level: nextStage,
+    async function loadAvatar() {
+      try {
+        const response = await avatarApi.getMyAvatar()
+
+        if (!isMounted) {
+          return
+        }
+
+        const nextAvatar = normalizeAvatar(response)
+        setAvatar(nextAvatar)
+        setIsRemoteMode(true)
+        setStatusMessage(
+          nextAvatar.dailyWateringChanceAvailable === false
+            ? '오늘 물주기 기회를 모두 사용했어요.'
+            : '백엔드에 저장된 나무 상태를 불러왔어요.',
+        )
+        setError(null)
+      } catch (loadError) {
+        console.error('avatar fetch failed', loadError)
+
+        if (!isMounted) {
+          return
+        }
+
+        setAvatar(INITIAL_AVATAR)
+        setIsRemoteMode(false)
+        setStatusMessage('백엔드 연결 전까지 프론트 성장 로직으로 보여드리고 있어요.')
+        setError(null)
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
-    })
+    }
+
+    void loadAvatar()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const waterTree = async () => {
+    if (isWatering || isLoading) {
+      return
+    }
+
+    if (isRemoteMode && avatar.dailyWateringChanceAvailable === false) {
+      setStatusMessage('오늘은 이미 물주기를 완료했어요.')
+      return
+    }
+
+    setIsWatering(true)
+    setError(null)
+
+    if (!isRemoteMode) {
+      setAvatar((currentAvatar) => applyLocalWatering(currentAvatar))
+      setStatusMessage('로컬 성장 모드로 물주기를 반영했어요.')
+      setIsWatering(false)
+      return
+    }
+
+    try {
+      const response = await avatarApi.waterTree()
+      setAvatar(normalizeAvatar(response.avatar))
+      setStatusMessage(
+        response.used
+          ? `${response.expGained} XP가 반영되었어요.`
+          : '오늘은 이미 물주기를 완료했어요.',
+      )
+    } catch (wateringError) {
+      console.error('avatar watering failed', wateringError)
+      setError('물주기 결과를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setIsWatering(false)
+    }
   }
 
   const currentStageAsset =
@@ -98,20 +193,25 @@ export const useAvatar = () => {
     avatar.stage >= avatar.maxStage ? avatar.maxExperience : avatar.stage * EXPERIENCE_PER_STAGE
 
   const currentStageFloor = (avatar.stage - 1) * EXPERIENCE_PER_STAGE
-  const currentStageSpan = avatar.stage >= avatar.maxStage ? EXPERIENCE_PER_STAGE : EXPERIENCE_PER_STAGE
   const stageProgress = avatar.experience - currentStageFloor
   const progressWithinStage =
     avatar.stage >= avatar.maxStage
       ? 100
-      : Math.min((stageProgress / currentStageSpan) * 100, 100)
+      : Math.min((stageProgress / EXPERIENCE_PER_STAGE) * 100, 100)
 
   return {
     avatar,
+    canWaterToday: isRemoteMode ? avatar.dailyWateringChanceAvailable !== false : true,
     currentStageAsset,
+    error,
+    isLoading,
     isMaxStage: avatar.stage >= avatar.maxStage,
+    isRemoteMode,
+    isWatering,
     nextStageExperienceGoal,
     progressWithinStage,
     stageAssets: GINKGO_STAGE_ASSETS,
+    statusMessage,
     waterTree,
   }
 }
