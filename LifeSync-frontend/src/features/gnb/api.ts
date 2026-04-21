@@ -3,6 +3,14 @@
  * 로고, 메뉴, 로그인 상태 영역
  */
 
+import apiClient from '@/shared/api/client'
+import type { GnbProfileResponse } from './types'
+
 export const gnbApi = {
-  // TODO: API 함수 추가
+  getProfile() {
+    return apiClient.get<never, GnbProfileResponse>('/auth/me')
+  },
+  logout() {
+    return apiClient.post<never, void>('/auth/logout')
+  },
 }
