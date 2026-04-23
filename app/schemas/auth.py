@@ -1,23 +1,28 @@
 from pydantic import BaseModel, EmailStr, Field
 
+from app.schemas.user import UserProfile
+
 
 class RegisterBody(BaseModel):
-    username: str = Field(
-        min_length=3,
-        max_length=20,
-        pattern=r"^[a-zA-Z0-9_]+$",
-        description="회원가입",
-    )
+    name: str = Field(min_length=1, max_length=50, description="이름")
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
 
 
 class LoginBody(BaseModel):
-    username: str = Field(
-        min_length=3,
-        max_length=20,
-        pattern=r"^[a-zA-Z0-9_]+$",
-        description="로그인",
+    email: EmailStr = Field(
+        description="이메일 로그인",
     )
-    password: str = Field(min_length=1, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
+
+
+class AuthSessionResponse(BaseModel):
+    accessToken: str
+    refreshToken: str | None = None
+    user: UserProfile | None = None
+
+
+class RefreshBody(BaseModel):
+    refreshToken: str
+
 

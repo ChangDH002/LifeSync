@@ -1,21 +1,22 @@
 from pydantic import BaseModel, EmailStr
 
 
-class UserPublic(BaseModel):
+class UserProfile(BaseModel):
     id: str
-    username: str
     email: EmailStr
+    name: str | None = None
 
     model_config = {"from_attributes": True}
 
 
 class UserDB(BaseModel):
     id: str
-    username: str
+    name: str | None = None
     email: EmailStr
     password_hash: str
 
     model_config = {"from_attributes": True}
 
 
-UserOut = UserPublic
+UserOut = UserProfile
+

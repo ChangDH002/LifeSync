@@ -24,7 +24,9 @@ async def connect_db() -> None:
     await _client.admin.command("ping")
     db = get_db()
     await db.users.create_index("email", unique=True)
-    await db.users.create_index("username", unique=True, sparse=True)
+    await db.users.create_index([("providers.provider", 1), ("providers.provider_user_id", 1)])
+    await db.refresh_tokens.create_index([("user_id", 1), ("jti_hash", 1)], unique=True)
+    await db.refresh_tokens.create_index("expires_at")
 
 
 async def close_db() -> None:
