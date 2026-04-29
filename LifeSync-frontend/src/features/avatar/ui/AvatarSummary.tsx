@@ -150,7 +150,7 @@ export function AvatarSummary() {
                       />
                     </div>
                   </div>
-                  <p className="mt-6 text-3xl font-extrabold tracking-[-0.03em] text-tealDark">
+                  <p className="mt-4 text-3xl font-extrabold tracking-[-0.03em] text-tealDark">
                     {avatar.name}
                   </p>
                   {isMaxStage ? (
@@ -161,13 +161,13 @@ export function AvatarSummary() {
                 </div>
               </div>
 
-              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6">
-                <div className="flex flex-col gap-4 rounded-[24px] bg-white/78 px-4 py-4 shadow-card backdrop-blur-sm md:flex-row md:items-end md:justify-between md:px-5">
+              <div className="absolute bottom-2 left-4 right-4 md:bottom-3 md:left-6 md:right-6">
+                <div className="flex flex-col gap-2 rounded-[24px] bg-white/78 px-4 py-2 shadow-card backdrop-blur-sm md:flex-row md:items-end md:justify-between md:px-5">
                   <div className="min-w-0 flex-1">
                     <p className="text-base font-extrabold tracking-[-0.02em] text-tealDark md:text-lg">
                       {currentStageAsset.title}
                     </p>
-                    <p className="mt-2 text-sm leading-7 text-content md:text-base">
+                    <p className="mt-2 text-sm leading-5 text-content md:text-base md:leading-6">
                       {currentStageAsset.description}
                     </p>
                     {statusMessage ? (

@@ -122,7 +122,7 @@ export const useAvatar = () => {
         setStatusMessage(
           nextAvatar.dailyWateringChanceAvailable === false
             ? '오늘 물주기 기회를 모두 사용했어요.'
-            : '백엔드에 저장된 나무 상태를 불러왔어요.',
+            : '소중하게 가꿔온 나무의 기록을 가져왔어요. 오늘도 성장을 이어가볼까요?',
         )
         setError(null)
       } catch (loadError) {
@@ -134,7 +134,7 @@ export const useAvatar = () => {
 
         setAvatar(INITIAL_AVATAR)
         setIsRemoteMode(false)
-        setStatusMessage('백엔드 연결 전까지 프론트 성장 로직으로 보여드리고 있어요.')
+        setStatusMessage('물주기로 성장 포인트를 쌓아보세요. 100 XP마다 나무가 더 멋지게 자라납니다.')
         setError(null)
       } finally {
         if (isMounted) {

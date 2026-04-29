@@ -65,8 +65,7 @@ export function ChatbotWorkspace() {
                   인지 건강 AI 상담
                 </h1>
                 <p className="mt-3 max-w-2xl text-base leading-8 text-contentMid md:text-lg">
-                  사용자의 질문을 백엔드로 전달하고, 학습된 LLM 응답을 다시 받아오는 구조를 기준으로
-                  구성했습니다. 지금은 대화 UI와 전송 흐름을 바로 연결할 수 있는 형태예요.
+                  생활 습관부터 인지 건강 관리까지, 인공지능 상담사가 정성을 다해 답변해 드릴게요.
                 </p>
               </div>
 
@@ -146,16 +145,16 @@ export function ChatbotWorkspace() {
                 <Stethoscope className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-[0.1em] text-primary">백엔드 연동 포인트</p>
+                <p className="text-sm font-semibold tracking-[0.1em] text-primary">이용 안내</p>{/*백엔드 연동 포인트*/}
                 <h2 className="mt-1 text-xl font-bold tracking-[-0.02em] text-tealDark">
-                  LLM 응답 흐름 준비 완료
+                  정확한 상담을 위한 팁
                 </h2>
               </div>
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-7 text-contentMid">
-              <li>`POST /chatbot/messages`로 `sessionId`, `message`, `history`를 전송합니다.</li>
-              <li>응답은 `sessionId`와 `answer`를 기준으로 다시 대화창에 추가합니다.</li>
-              <li>지금 구조면 RAG, 상담 이력 저장, 사용자별 세션 이어받기를 나중에 덧붙이기 쉽습니다.</li>
+              <li>증상이나 고민을 구체적으로 적어주실수록 더 도움이 되는 답변을 드릴 수 있습니다.</li>{/*`POST /chatbot/messages`로 `sessionId`, `message`, `history`를 전송합니다.*/}
+              <li>과거 상담 이력을 바탕으로 사용자 맞춤형 인지 건강 정보를 제공합니다.</li>{/*응답은 `sessionId`와 `answer`를 기준으로 다시 대화창에 추가합니다.*/}
+              <li>답변 내용이 길어질 경우, 핵심 요약 위주로 읽어보시는 것을 추천합니다.</li>{/*지금 구조면 RAG, 상담 이력 저장, 사용자별 세션 이어받기를 나중에 덧붙이기 쉽습니다.*/}
             </ul>
           </SectionCard>
 
