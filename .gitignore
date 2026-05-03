@@ -26,3 +26,7 @@ build/
 # OS
 Thumbs.db
 Desktop.ini
+
+# GIT
+.git
+.cursor

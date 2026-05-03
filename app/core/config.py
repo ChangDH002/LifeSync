@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     kakao_rest_api_key: str | None = None
     kakao_client_secret: str | None = None
 
+    ai_chatbot_url: str = "http://localhost:8001"
+
     social_state_secret: str = "change-me-in-production"
     social_state_expires_minutes: int = 10
     social_redirect_allowlist: str = ""

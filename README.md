@@ -139,11 +139,15 @@ dementia/
 ```bash
 cd "폴더이름"
 python -m pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+npx --yes concurrently --names api,web --prefix-colors cyan,magenta "npx --yes wait-on tcp:127.0.0.1:27017 -t 120000 && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000" "cd /d c:..\LifeSync-frontend && npm run dev"
+'''
+
 
 API 문서: `http://127.0.0.1:8000/docs`
 
 ## 의존성
 
 `requirements.txt`: `fastapi`, `uvicorn[standard]`, `motor`, `passlib[bcrypt]`, `pydantic-settings`, `email-validator`, `python-jose[cryptography]`, `httpx`
+
+# 포트 점유 프로세스 한 번에 종료
+Get-Process node, python -ErrorAction SilentlyContinue | Stop-Process -Force

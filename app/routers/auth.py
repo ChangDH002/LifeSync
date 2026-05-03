@@ -25,8 +25,8 @@ def _user_to_out(doc: dict) -> UserProfile:
     )
 
 
-@router.post("/signup", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
-async def signup(body: RegisterBody) -> UserProfile:
+@router.post("/signup", response_model=AuthSessionResponse, status_code=status.HTTP_201_CREATED)
+async def signup(body: RegisterBody) -> AuthSessionResponse:
     if await users_service.get_user_by_email(body.email):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -41,7 +41,19 @@ async def signup(body: RegisterBody) -> UserProfile:
             status_code=status.HTTP_409_CONFLICT,
             detail="Email already registered",
         ) from None
-    return _user_to_out(doc)
+    user_id = str(doc["_id"])
+    access_token = create_access_token(subject=user_id)
+    refresh_token, jti = create_refresh_token(subject=user_id)
+    await refresh_tokens_service.store_refresh_token(
+        user_id=user_id,
+        jti=jti,
+        expires_at=refresh_tokens_service.refresh_expires_at_from_now(),
+    )
+    return AuthSessionResponse(
+        accessToken=access_token,
+        refreshToken=refresh_token,
+        user=_user_to_out(doc),
+    )
 
 
 @router.post("/login", response_model=AuthSessionResponse)
