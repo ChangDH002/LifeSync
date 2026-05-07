@@ -49,7 +49,7 @@ export function LoginPrompt() {
   return (
     <AuthFormCard
       badge="Account"
-      description="큰 글씨와 또렷한 버튼, 단순한 입력 흐름을 기본으로 한 로그인 진입 화면입니다."
+      description="이메일이나 SNS 계정으로 간편하게 로그인하여 인지 건강 관리를 시작하세요."// 큰 글씨와 또렷한 버튼, 단순한 입력 흐름을 기본으로 한 로그인 진입 화면입니다.
       footerLinkLabel="회원가입하기"
       footerLinkTo={ROUTE_PATHS.signup}
       footerPrompt="처음 오셨나요?"

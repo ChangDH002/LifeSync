@@ -20,6 +20,7 @@ import {
   TermsPage,
   AttentionGamePage,
   TrainingPage,
+  SurveyPage, 
 } from '@/pages'
 import { RequireAuth } from './RequireAuth'
 
@@ -47,6 +48,10 @@ export const router = createBrowserRouter([
         <MypagePage />
       </RequireAuth>
     ),
+  },
+  {
+    path: ROUTE_PATHS.survey,
+    element: <SurveyPage />,
   },
   {
     path: ROUTE_PATHS.settings,
