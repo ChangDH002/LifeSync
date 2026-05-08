@@ -27,6 +27,7 @@ export const ROUTE_PATHS = {
   terms: '/terms',
   privacy: '/privacy',
   medicalNotice: '/medical-notice',
+  survey: '/survey',
 } as const
 
 export const API_CONFIG = {

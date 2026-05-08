@@ -2,8 +2,10 @@ import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
 import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
+import { useNavigate } from 'react-router-dom';
 
 export function JudgmentGame() {
+  const navigate = useNavigate();
   const { scenario, selectedIdx, handleSelect, nextScenario, isLast } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
   const { reportParticipation } = useTrainingActivityReporter({
@@ -90,19 +92,28 @@ export function JudgmentGame() {
             {scenario.options[selectedIdx].feedback}
           </div>
           
-          {!isLast && (
-            <button
-              onClick={nextScenario}
-              className={cn(
-                'w-full rounded-2xl bg-primary font-bold text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95',
-                isMobile ? 'py-4 text-lg' : 'py-5 text-2xl'
-              )}
-              type="button"
-            >
-              다음 문제 확인하기
-            </button>
-          )}
-
+          <button
+          onClick={() => {
+            if (isLast) {
+              void reportParticipation({
+              trainingTitle: '상황 판단 퀴즈 완료',
+              scenarioId: scenario.id,
+            });
+            navigate('/training');
+              // alert("모든 문제를 완료했습니다! 홈으로 돌아갑니다.");
+            } else {
+              nextScenario();
+          }
+        }}
+        className={cn(
+          'w-full rounded-2xl font-bold text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95',
+          isLast ? 'bg-tealDark' : 'bg-primary', 
+          isMobile ? 'py-4 text-lg' : 'py-5 text-2xl'
+      )}
+      type="button"
+      >
+      {isLast ? "훈련 종료하고 돌아가기" : "다음 문제 확인하기"}
+      </button>
           {isLast && (
             <div className={cn('py-4 text-center font-medium text-gray-500', isMobile ? 'text-base' : '')}>
               오늘의 판단력 훈련을 모두 마쳤습니다!

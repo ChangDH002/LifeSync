@@ -17,3 +17,4 @@ export { default as JudgmentGamePage } from './training/JudgmentGamePage'
 export * from './training/LanguageGamePage'
 export * from './training/MemoryGamePage'
 export * from './training/TrainingPage'
+export * from './survey/SurveyPage';

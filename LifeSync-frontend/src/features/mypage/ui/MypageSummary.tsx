@@ -193,7 +193,7 @@ export function MypageSummary() {
                   </p>
                 </div>
               </div>
-              <Button asLink className="px-7" to="/login">
+              <Button asLink className="px-7" to="/survey">
                 지금 설문하기
               </Button>
             </div>

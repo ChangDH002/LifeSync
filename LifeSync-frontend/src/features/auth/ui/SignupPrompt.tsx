@@ -47,7 +47,7 @@ export function SignupPrompt() {
   return (
     <AuthFormCard
       badge="Sign Up"
-      description="이메일 가입과 소셜 가입을 같은 흐름 안에서 제공하고, 나중에 백엔드 OAuth 연동으로 그대로 이어질 수 있도록 구성한 화면입니다."
+      description="복잡한 절차 없이 이메일이나 평소 쓰시는 SNS 계정으로 쉽고 빠르게 연결할 수 있습니다."//이메일 가입과 소셜 가입을 같은 흐름 안에서 제공하고, 나중에 백엔드 OAuth 연동으로 그대로 이어질 수 있도록 구성한 화면입니다.
       footerLinkLabel="로그인하기"
       footerLinkTo={ROUTE_PATHS.login}
       footerPrompt="이미 계정이 있으신가요?"
