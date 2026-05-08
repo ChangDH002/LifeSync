@@ -1,9 +1,13 @@
 /**
  * 챗봇 도메인 Hook
  */
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+
+import { useAuth } from '@/features/auth'
+import { getApiErrorMessage } from '@/shared/api'
+
 import { chatbotApi } from './api'
-import type { ChatMessage } from './types'
+import type { ChatMessage, ChatMessageRole, ChatSessionSummary } from './types'
 
 const starterMessages: ChatMessage[] = [
   {
@@ -30,20 +34,45 @@ function createMessage(role: ChatMessage['role'], content: string): ChatMessage 
   }
 }
 
+function normalizeRole(role: string): ChatMessageRole {
+  if (role === 'user' || role === 'assistant' || role === 'system') return role
+  return 'assistant'
+}
+
 export const useChatbot = () => {
+  const { isAuthenticated } = useAuth()
   const [messages, setMessages] = useState<ChatMessage[]>(starterMessages)
   const [input, setInput] = useState('')
   const [sessionId, setSessionId] = useState<string | undefined>()
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sessions, setSessions] = useState<ChatSessionSummary[]>([])
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [sessionOpeningId, setSessionOpeningId] = useState<string | null>(null)
+
+  const loadSessions = useCallback(async () => {
+    if (!isAuthenticated) return
+    setSessionsLoading(true)
+    try {
+      const list = await chatbotApi.listSessions()
+      setSessions(list)
+    } catch {
+      console.warn('세션 목록을 불러오지 못했습니다.')
+      setSessions([])
+    } finally {
+      setSessionsLoading(false)
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    void loadSessions()
+  }, [loadSessions])
 
   const canSend = input.trim().length > 0 && !isSending
 
   const sendMessage = async (messageText: string) => {
     const trimmedMessage = messageText.trim()
-    if (!trimmedMessage || isSending) {
-      return
-    }
+    if (!trimmedMessage || isSending) return
 
     const userMessage = createMessage('user', trimmedMessage)
     const nextMessages = [...messages, userMessage]
@@ -61,19 +90,14 @@ export const useChatbot = () => {
       })
 
       setSessionId(response.sessionId)
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        createMessage('assistant', response.answer),
-      ])
+      setMessages((prev) => [...prev, createMessage('assistant', response.answer)])
+      await loadSessions()
     } catch (sendError) {
       console.error(sendError)
-      setError('아직 답변을 불러오지 못했습니다. 백엔드 연결 상태를 확인한 뒤 다시 시도해 주세요.')
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        createMessage(
-          'assistant',
-          '현재 서버 응답을 받지 못했어요. 잠시 후 다시 시도하거나, 백엔드 챗봇 연결 상태를 확인해 주세요.',
-        ),
+      setError(getApiErrorMessage(sendError, '아직 답변을 불러오지 못했습니다. 백엔드·AI 챗봇(8001) 상태를 확인한 뒤 다시 시도해 주세요.'))
+      setMessages((prev) => [
+        ...prev,
+        createMessage('assistant', '현재 서버 응답을 받지 못했어요. 잠시 후 다시 시도하거나, 백엔드 챗봇 연결 상태를 확인해 주세요.'),
       ])
     } finally {
       setIsSending(false)
@@ -90,19 +114,54 @@ export const useChatbot = () => {
     await sendMessage(prompt)
   }
 
-  const messageCountLabel = useMemo(() => `${Math.max(messages.length - 1, 0)}개의 대화`, [messages.length])
+  const openSession = async (sid: string) => {
+    setSessionOpeningId(sid)
+    setError(null)
+    try {
+      const detail = await chatbotApi.getSession(sid)
+      setSessionId(detail.session_id)
+      const loaded: ChatMessage[] = detail.messages.map((m: { role: string; content: string; timestamp: string }, i: number) => ({
+        id: `loaded-${detail.session_id}-${i}-${m.timestamp}`,
+        role: normalizeRole(m.role),
+        content: m.content,
+        timestamp: m.timestamp || new Date().toISOString(),
+      }))
+      setMessages([...starterMessages, ...loaded])
+    } catch {
+      setError('이전 대화를 불러오지 못했습니다.')
+    } finally {
+      setSessionOpeningId(null)
+    }
+  }
+
+  const startNewChat = () => {
+    setSessionId(undefined)
+    setMessages(starterMessages)
+    setError(null)
+  }
+
+  const messageCountLabel = useMemo(
+    () => `${Math.max(messages.length - 1, 0)}개의 대화`,
+    [messages.length],
+  )
 
   return {
+    applyStarterPrompt,
     canSend,
     error,
     handleSubmit,
     input,
     isSending,
+    loadSessions,
     messageCountLabel,
     messages,
+    openSession,
     sessionId,
+    sessionOpeningId,
+    sessions,
+    sessionsLoading,
     setInput,
+    startNewChat,
     starterPrompts,
-    applyStarterPrompt,
   }
 }

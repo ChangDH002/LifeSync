@@ -1,29 +1,6 @@
-<<<<<<< HEAD
-# DementiaCare — AI 기반 치매 예방 및 관리 지원 애플리케이션
----
-### 사용자의 생활습관, 인지활동, 성향 데이터를 바탕으로 치매 위험군 유형을 분석하고, 맞춤형 루틴·인지훈련·대화형 지원을 제공하는 AI 기반 치매 예방 및 관리 보조 애플리케이션
----
-## 핵심기능
-| 기능 | 설명 |
-|------|------|
-| 위험군 유형 분석 | 설문 및 생활습관 데이터를 바탕으로 운동부족형, 인지자극부족형 등 위험군 유형 분류 |
-| 치매 정보 제공 | 치매 유형, 특징, 예방 방법, 개선 방향 관련 정보 페이지 제공 |
-| 맞춤 루틴 추천| 사용자 상태에 따라 운동, 생활습관, 인지활동 루틴 추천 |
-| 인지 훈련 게임 | 기억력, 집중력, 반응속도 향상을 위한 간단한 게임 제공 |
-| 성향 기반 활동 추천| 사용자 성향과 선호도에 맞는 활동 및 콘텐츠 추천 |
-| 챗봇/음성 대화 | API 기반 AI 챗봇 또는 음성 대화로 결과 설명, 루틴 안내, 동기부여 제공
-| 비금전적 보상 | 일일 미션을 통한 나무 키우기 |
----
-## 기술 스택
-| 파트 | 기술 |
-|------|------|
-| AI | |
-| Back | |
-| Front | |
-=======
 # 프로젝트 구조 (Dementia API)
 
-FastAPI + Motor(MongoDB) 기반 백엔드. 회원가입·로그인은 **세션 쿠키**(`SessionMiddleware`)를 사용한다.
+FastAPI + Motor(MongoDB) 기반 백엔드. 인증은 **Bearer JWT(access/refresh)** 기반이다.
 
 ## 디렉터리 구조
 
@@ -40,33 +17,41 @@ dementia/
     ├── core/
     │   ├── __init__.py
     │   ├── config.py    # pydantic-settings (.env 로드)
+    │   ├── jwt.py       # access/refresh JWT 생성/검증
     │   └── password_hash.py  # 비밀번호 해시/검증(bcrypt)
     ├── routers/
     │   ├── __init__.py
-    │   └── auth.py      # /auth/* 엔드포인트
+    │   ├── auth.py      # /auth/* (signup/login/refresh/me 등)
+    │   └── social_auth.py # /auth/social/* (google/kakao)
     ├── schemas/
     │   ├── __init__.py
-    │   ├── auth.py      # RegisterBody, LoginBody (인증 요청 body)
-    │   ├── user.py      # UserPublic/UserDB 등 사용자 스키마
+    │   ├── auth.py      # RegisterBody, LoginBody, AuthSessionResponse 등
+    │   ├── social_auth.py # 소셜 start/callback 스키마
+    │   ├── user.py      # UserProfile/UserDB 등 사용자 스키마
     │   └── common.py    # 공통 메시지 응답 스키마(CommonResponse)
     └── services/
         ├── __init__.py
-        └── users.py     # 사용자 CRUD 조회(비밀번호 해시/검증은 core로 분리)
+        ├── users.py     # 사용자 CRUD/소셜 연결
+        ├── refresh_tokens.py # refresh token(jti) 저장/활성/폐기
+        └── social_auth.py # provider OAuth URL/교환/유저 resolve
 ```
 
 ## 계층 역할
 
 | 경로 | 역할 |
 |------|------|
-| `app/main.py` | 앱 생성, `lifespan`에서 DB 연결, `SessionMiddleware`·`CORSMiddleware`, `auth` 라우터 prefix `/auth` |
-| `app/core/config.py` | `MONGODB_URL`, `DATABASE_NAME`, `SECRET_KEY`, `CORS_ORIGINS` 등 설정 싱글톤 `settings` |
+| `app/main.py` | 앱 생성, `lifespan`에서 DB 연결, `CORSMiddleware`, 라우터 마운트 |
+| `app/core/config.py` | `MONGODB_URL`, `DATABASE_NAME`, `JWT_SECRET_KEY`, OAuth 키 등 설정 싱글톤 `settings` |
 | `app/core/password_hash.py` | 비밀번호 bcrypt 해시/검증 유틸 |
 | `app/db.py` | `AsyncIOMotorClient`, `get_db()`, 기동 시 `ping` 및 `users` 컬렉션 인덱스 |
-| `app/schemas/auth.py` | 인증 요청 body 모델(`RegisterBody`, `LoginBody`) |
+| `app/core/jwt.py` | access/refresh JWT 발급/검증 |
+| `app/schemas/auth.py` | 인증 요청/응답 스키마(`RegisterBody`, `LoginBody`, `AuthSessionResponse`, `RefreshBody`) |
 | `app/schemas/user.py` | 사용자 스키마(공개 정보/DB 모델/응답 별칭) |
 | `app/schemas/common.py` | 공통 메시지 응답 스키마 |
-| `app/services/users.py` | 이메일/아이디/ID 조회, 사용자 생성(비밀번호는 해시로 저장) |
-| `app/routers/auth.py` | HTTP 라우트 및 세션에 `user_id` 저장 |
+| `app/services/users.py` | 이메일/ID 조회, 로컬/소셜 사용자 생성/연결 |
+| `app/services/refresh_tokens.py` | refresh token(jti) DB 저장/활성검사/폐기(회전 지원) |
+| `app/routers/auth.py` | 로컬 signup/login/refresh/me 및 토큰 발급 |
+| `app/routers/social_auth.py` | 구글/카카오 start/callback/redirect 라우트 |
 
 ## 환경 변수
 
@@ -76,19 +61,33 @@ dementia/
 |------|------|
 | `MONGODB_URL` | MongoDB 연결 URI (로컬 또는 Atlas `mongodb+srv://...`) |
 | `DATABASE_NAME` | 사용할 논리 DB 이름 (예: `dementia_app`) |
-| `SECRET_KEY` | 세션 쿠키 서명용 비밀 문자열 |
 | `CORS_ORIGINS` | 허용 출처, 쉼표 구분 (예: `http://localhost:3000,http://127.0.0.1:3000`) |
+| `JWT_SECRET_KEY` | access/refresh JWT 서명 키 |
+| `ACCESS_TOKEN_EXPIRES_MINUTES` | accessToken 만료(분) |
+| `REFRESH_TOKEN_EXPIRES_DAYS` | refreshToken 만료(일) |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
+| `KAKAO_REST_API_KEY` | Kakao REST API 키(client_id) |
+| `KAKAO_CLIENT_SECRET` | Kakao Client Secret(사용 설정 시) |
+| `SOCIAL_STATE_SECRET` | 소셜 로그인 `state` 서명 키 |
+| `SOCIAL_REDIRECT_ALLOWLIST` | 허용 redirectUri 목록(쉼표 구분, **경로 포함 URL**) |
 
 ## MongoDB
 
 - **위치**: URI가 가리키는 서버(로컬 `mongod` 또는 Atlas). 프로젝트 폴더 안에 DB 파일이 생기지는 않는다.
 - **데이터베이스**: `DATABASE_NAME` 이름의 DB.
-- **컬렉션**: `users`
-- **문서 필드(신규 가입 기준)**:
-  - `username` (소문자 저장, 유니크, sparse 인덱스)
+- **컬렉션**: `users`, `refresh_tokens`
+- **users 문서 필드(신규 가입 기준)**:
   - `email` (소문자 저장, 유니크)
-  - `password_hash` (bcrypt)
-- **기동 시 인덱스**: `email` 유니크, `username` 유니크 sparse
+  - `name` (선택)
+  - `password_hash` (로컬 가입 시 bcrypt 해시, 소셜 유저는 `null`)
+  - `provider` (`local|google|kakao`)
+  - `providers` (연결된 provider 목록)
+  - `created_at`, `updated_at`
+- **기동 시 인덱스**:
+  - `users.email` 유니크
+  - `users.providers.provider + users.providers.provider_user_id` 인덱스
+  - `refresh_tokens (user_id, jti_hash)` 유니크
 
 ## HTTP API
 
@@ -96,46 +95,59 @@ dementia/
 |--------|------|------|
 | GET | `/health` | `{"ok": true}` |
 | GET | `/docs` | 전체 API  |
-| POST | `/auth/register` | 회원가입 → 201 + `UserOut` |
-| POST | `/auth/login` | 로그인, 세션 쿠키 설정 → 200 + `UserOut` |
-| POST | `/auth/logout` | 세션 제거 → 204 |
-| GET | `/auth/me` | 세션의 `user_id`로 사용자 조회 → 200 + `UserOut` 또는 401 |
+| POST | `/auth/signup` | 로컬 회원가입 → 201 + `UserProfile` |
+| POST | `/auth/login` | 로컬 로그인(email/password) → 200 + `AuthSessionResponse` |
+| POST | `/auth/refresh` | refreshToken으로 토큰 재발급(회전) → 200 + `AuthSessionResponse` |
+| POST | `/auth/logout` | refreshToken 폐기 → 204 |
+| GET | `/auth/me` | accessToken(Bearer)로 사용자 조회 → 200 + `UserProfile` 또는 401 |
+| GET | `/auth/social/google/start` | 구글 OAuth start URL 발급 |
+| GET | `/auth/social/kakao/start` | 카카오 OAuth start URL 발급 |
+| POST | `/auth/social/google/callback` | (프론트 연동) code 교환 → `AuthSessionResponse` |
+| POST | `/auth/social/kakao/callback` | (프론트 연동) code 교환 → `AuthSessionResponse` |
+| GET | `/auth/social/google/redirect` | (프론트 없이) redirect에서 code/state 처리 → `AuthSessionResponse` |(백엔드 테스트 전용)
+| GET | `/auth/social/kakao/redirect` | (프론트 없이) redirect에서 code/state 처리 → `AuthSessionResponse` |(백엔드 테스트 전용)
 
 
 ### 요청 본문 요약
 
-- **register**: `username` (3~20자, 영문·숫자·`_`), `email`, `password` (8자 이상)
-- **login**: `username`과 `password`만 사용.
+- **signup**: `name`, `email`, `password`
+- **login**: `email`, `password`
+- **refresh/logout**: `refreshToken`
 
-### 응답 `UserOut`
+### 응답 `AuthSessionResponse` (login/refresh/소셜)
 
 ```json
 {
-  "id": "<MongoDB ObjectId 문자열>",
-  "username": "<아이디>",
-  "email": "<이메일>"
+  "accessToken": "jwt-token",
+  "refreshToken": "refresh-token",
+  "user": {
+    "id": "<MongoDB ObjectId 문자열>",
+    "email": "<이메일>",
+    "name": "<이름(선택)>"
+  }
 }
 ```
 
-`id`는 문서 `_id`이며, 세션에도 동일 문자열이 `user_id`로 저장된다. 구 계정에 `username`이 없으면 빈 문자열일 수 있다.
-
 ## 인증 흐름
 
-1. `POST /auth/login` 성공 시 `request.session["user_id"]` 설정, 브라우저에 서명된 세션 쿠키 발급.
-2. 이후 같은 사이트/출처에서 쿠키를내면 `GET /auth/me` 등에서 세션으로 사용자 식별.
-3. 별도 프론트 도메인 사용 시 `CORS_ORIGINS`에 프론트 origin을 넣고, 클라이언트는 `credentials: 'include'` 필요.
+1. `POST /auth/login`(또는 소셜 redirect/callback) 성공 시 `accessToken`, `refreshToken` 발급
+2. 보호 API 호출 시 `Authorization: Bearer <accessToken>` 헤더로 인증
+3. accessToken 만료 시 `POST /auth/refresh`로 재발급(회전)
 
 ## 실행
 
 ```bash
 cd "폴더이름"
 python -m pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+npx --yes concurrently --names api,web --prefix-colors cyan,magenta "npx --yes wait-on tcp:127.0.0.1:27017 -t 120000 && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000" "cd /d c:..\LifeSync-frontend && npm run dev"
+'''
+
 
 API 문서: `http://127.0.0.1:8000/docs`
 
 ## 의존성
 
-`requirements.txt`: `fastapi`, `uvicorn[standard]`, `motor`, `passlib[bcrypt]`, `pydantic-settings`, `email-validator`
->>>>>>> origin/feature/backend
+`requirements.txt`: `fastapi`, `uvicorn[standard]`, `motor`, `passlib[bcrypt]`, `pydantic-settings`, `email-validator`, `python-jose[cryptography]`, `httpx`
+
+# 포트 점유 프로세스 한 번에 종료
+Get-Process node, python -ErrorAction SilentlyContinue | Stop-Process -Force

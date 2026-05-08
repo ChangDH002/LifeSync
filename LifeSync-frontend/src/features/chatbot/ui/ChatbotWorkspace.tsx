@@ -40,6 +40,7 @@ function MessageBubble({
 
 export function ChatbotWorkspace() {
   const {
+    applyStarterPrompt,
     canSend,
     error,
     handleSubmit,
@@ -47,10 +48,14 @@ export function ChatbotWorkspace() {
     isSending,
     messageCountLabel,
     messages,
+    openSession,
     sessionId,
+    sessionOpeningId,
+    sessions,
+    sessionsLoading,
     setInput,
+    startNewChat,
     starterPrompts,
-    applyStarterPrompt,
   } = useChatbot()
 
   return (
@@ -65,15 +70,14 @@ export function ChatbotWorkspace() {
                   인지 건강 AI 상담
                 </h1>
                 <p className="mt-3 max-w-2xl text-base leading-8 text-contentMid md:text-lg">
-                  사용자의 질문을 백엔드로 전달하고, 학습된 LLM 응답을 다시 받아오는 구조를 기준으로
-                  구성했습니다. 지금은 대화 UI와 전송 흐름을 바로 연결할 수 있는 형태예요.
+                  생활 습관, 인지 건강 정보, 루틴 실천 방법을 차분하게 정리해드립니다.
                 </p>
               </div>
 
               <div className="rounded-[22px] bg-white/78 px-4 py-3 shadow-card">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">세션 상태</p>
                 <p className="mt-1 text-base font-bold text-tealDark">
-                  {sessionId ? `연결됨 · ${sessionId}` : '새 대화 시작 전'}
+                  {sessionId ? `연결됨 · ${sessionId.slice(0, 8)}…` : '새 대화 시작 전'}
                 </p>
                 <p className="mt-1 text-sm text-contentMid">{messageCountLabel}</p>
               </div>
@@ -139,33 +143,79 @@ export function ChatbotWorkspace() {
           </div>
         </SectionCard>
 
+        {/* 사이드바 */}
         <div className="space-y-5">
+          {/* 이전 대화 세션 목록 */}
+          <SectionCard className="rounded-[28px] border-primary/15 bg-white/86 p-5 shadow-card">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm font-semibold tracking-[0.1em] text-primary">이전 대화</p>
+              <button
+                className="rounded-full border border-primary/20 bg-primaryPale/80 px-3 py-1 text-xs font-semibold text-primary hover:bg-primaryPale"
+                onClick={startNewChat}
+                type="button"
+              >
+                + 새 채팅
+              </button>
+            </div>
+
+            {/* 세션 목록 스크롤 영역 */}
+            <div className="max-h-[320px] overflow-y-auto pr-1">
+              {sessionsLoading ? (
+                <div className="flex items-center gap-2 text-sm text-contentMid">
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  불러오는 중...
+                </div>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm text-contentLight">저장된 대화가 없습니다.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {sessions.map((s) => (
+                    <li key={s.session_id}>
+                      <button
+                        className={`w-full rounded-[16px] border px-4 py-3 text-left text-sm transition-colors ${
+                          sessionId === s.session_id
+                            ? 'border-primary/30 bg-primaryPale text-primary'
+                            : 'border-border bg-white/70 text-content hover:bg-primaryPale/50'
+                        }`}
+                        disabled={sessionOpeningId === s.session_id}
+                        onClick={() => void openSession(s.session_id)}
+                        type="button"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          {sessionOpeningId === s.session_id ? (
+                            <LoaderCircle className="h-3 w-3 shrink-0 animate-spin" />
+                          ) : null}
+                          <p className="truncate font-medium">{s.title || '(제목 없음)'}</p>
+                        </div>
+                        <p className="mt-1 text-xs text-contentMid">
+                          {s.message_count}개 메시지 · {s.updated_at.slice(0, 10)}
+                        </p>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </SectionCard>
+
+          {/* 안내 카드 */}
           <SectionCard className="rounded-[28px] border-primary/15 bg-white/86 p-5 shadow-card">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primaryPale text-primary">
                 <Stethoscope className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-[0.1em] text-primary">백엔드 연동 포인트</p>
+                <p className="text-sm font-semibold tracking-[0.1em] text-primary">안내</p>
                 <h2 className="mt-1 text-xl font-bold tracking-[-0.02em] text-tealDark">
-                  LLM 응답 흐름 준비 완료
+                  AI 상담 이용 안내
                 </h2>
               </div>
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-7 text-contentMid">
-              <li>`POST /chatbot/messages`로 `sessionId`, `message`, `history`를 전송합니다.</li>
-              <li>응답은 `sessionId`와 `answer`를 기준으로 다시 대화창에 추가합니다.</li>
-              <li>지금 구조면 RAG, 상담 이력 저장, 사용자별 세션 이어받기를 나중에 덧붙이기 쉽습니다.</li>
+              <li>· 의료 진단을 대신하지 않습니다.</li>
+              <li>· 위험 신호가 있으면 전문의 상담이 필요합니다.</li>
+              <li>· 대화 내용은 자동으로 저장됩니다.</li>
             </ul>
-          </SectionCard>
-
-          <SectionCard className="rounded-[28px] border-primary/15 bg-white/86 p-5 shadow-card">
-            <p className="text-sm font-semibold tracking-[0.1em] text-primary">추천 질문 톤</p>
-            <div className="mt-4 space-y-3 text-sm leading-7 text-contentMid">
-              <p>짧게 한 문장으로 시작해도 됩니다.</p>
-              <p>예: “부모님 수면 습관이 걱정돼요”</p>
-              <p>예: “오늘 바로 해볼 수 있는 기억력 관리 루틴 알려줘”</p>
-            </div>
           </SectionCard>
         </div>
       </div>

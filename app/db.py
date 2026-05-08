@@ -24,7 +24,18 @@ async def connect_db() -> None:
     await _client.admin.command("ping")
     db = get_db()
     await db.users.create_index("email", unique=True)
-    await db.users.create_index("username", unique=True, sparse=True)
+    await db.users.create_index([("providers.provider", 1), ("providers.provider_user_id", 1)])
+    await db.refresh_tokens.create_index([("user_id", 1), ("jti_hash", 1)], unique=True)
+    await db.refresh_tokens.create_index("expires_at")
+    await db.attendance_logs.create_index([("user_id", 1), ("date", 1)], unique=True)
+    await db.watering_chances.create_index([("user_id", 1), ("date", 1)], unique=True)
+    await db.training_events.create_index([("user_id", 1), ("occurred_at", -1)])
+    await db.avatars.create_index("user_id", unique=True)
+    await db.routine_completions.create_index(
+        [("user_id", 1), ("routine_id", 1), ("date", 1)], unique=True
+    )
+    await db.chat_sessions.create_index("session_id", unique=True)
+    await db.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
 
 
 async def close_db() -> None:

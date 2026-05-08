@@ -1,0 +1,188 @@
+@import './variables.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 시니어 사용자 친화 기본 스타일 */
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-base text-content;
+    font-family: 'Noto Sans KR', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  /* 포커스 상태 접근성 설정 */
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* 선택 스타일 */
+  ::selection {
+    @apply bg-primary/20 text-content;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-primaryPale;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded bg-primaryLight;
+  }
+}
+
+@layer components {
+  /* 시니어 친화 버튼 */
+  .btn-primary {
+    @apply inline-flex min-h-[54px] items-center justify-center rounded-xl bg-gradient-to-br from-primary to-teal px-6 py-3 text-lg font-semibold text-white shadow-hero transition-all hover:-translate-y-0.5 hover:shadow-cardLg disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-[54px] items-center justify-center rounded-xl border-2 border-primary/30 bg-surface px-6 py-3 text-lg font-semibold text-teal transition-all hover:bg-primaryPale hover:text-tealDark disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* 입력 필드 */
+  .input-base {
+    @apply w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-content placeholder:text-contentLight focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-primaryPale/60;
+  }
+
+  /* 카드 */
+  .card {
+    @apply rounded-[20px] border border-border bg-surface p-8 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-cardLg;
+  }
+
+  .section-badge {
+    @apply inline-flex w-fit items-center rounded-full bg-primaryPale px-4 py-1.5 text-base font-semibold tracking-[0.04em] text-primary;
+  }
+
+  .section-title {
+    @apply text-3xl font-extrabold tracking-[-0.02em] text-tealDark md:text-4xl;
+  }
+
+  .section-subtitle {
+    @apply text-base leading-8 text-contentLight md:text-lg;
+  }
+
+  .content-title {
+    @apply text-2xl font-bold tracking-[-0.02em] text-tealDark md:text-[28px];
+  }
+
+  .content-body {
+    @apply text-base leading-8 text-contentMid;
+  }
+
+  .content-note {
+    @apply text-sm leading-7 text-contentLight md:text-base;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-[1200px] px-4 md:px-8;
+  }
+
+  .hero-surface {
+    background: linear-gradient(160deg, #e8f2ec 0%, #d4eade 40%, #c6e0d8 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-surface::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(92, 138, 107, 0.15) 0%, transparent 70%);
+    border-radius: 9999px;
+  }
+
+  .hero-surface::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: 10%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(45, 110, 107, 0.1) 0%, transparent 70%);
+    border-radius: 9999px;
+  }
+
+  .logo-mark {
+    @apply flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-teal text-lg text-white shadow-card;
+  }
+
+  .footer-link {
+    @apply text-base text-white/60 transition-colors hover:text-[#F0C896];
+  }
+
+  .nav-link {
+    @apply relative rounded-xl px-4 py-3 text-lg font-bold leading-none tracking-[-0.01em] text-content transition-all duration-150;
+  }
+
+  .nav-link-active {
+    @apply bg-primaryPale/80 text-tealDark;
+  }
+
+  .nav-link-idle {
+    @apply hover:bg-primaryPale/70 hover:text-tealDark;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-1 left-4 right-4 h-0.5 origin-center scale-x-0 rounded-full bg-teal transition-transform duration-150;
+  }
+
+  .nav-link:hover::after,
+  .nav-link-active::after {
+    @apply scale-x-100;
+  }
+}
+
+@layer utilities {
+  /* 텍스트 크기 유틸리티 */
+  .text-accessible-sm {
+    @apply text-sm;
+  }
+
+  .text-accessible-base {
+    @apply text-base;
+  }
+
+  .text-accessible-lg {
+    @apply text-lg;
+  }
+
+  .text-accessible-xl {
+    @apply text-xl;
+  }
+
+  /* 간격 유틸리티 */
+  .gap-accessible {
+    @apply gap-5;
+  }
+
+  /* 최소 터치 영역 */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}

@@ -13,6 +13,34 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
+    jwt_secret_key: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expires_minutes: int = 60
+    refresh_token_expires_days: int = 14
+
+    # Social login (OAuth)
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    kakao_rest_api_key: str | None = None
+    kakao_client_secret: str | None = None
+
+    ai_chatbot_url: str = "http://localhost:8001"
+
+    social_state_secret: str = "change-me-in-production"
+    social_state_expires_minutes: int = 10
+    social_redirect_allowlist: str = ""
+
+    @property
+    def social_redirect_allowlist_list(self) -> list[str]:
+        if self.social_redirect_allowlist.strip():
+            return [
+                o.strip()
+                for o in self.social_redirect_allowlist.split(",")
+                if o.strip()
+            ]
+        # Fallback: use CORS origins as allowlist
+        return self.cors_origins_list
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
