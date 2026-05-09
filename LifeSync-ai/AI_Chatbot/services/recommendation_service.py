@@ -3,6 +3,7 @@ RecommendationService: SBERT 기반 추천 CSV 의미론적 검색 서비스
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +51,17 @@ class RecommendationService:
             )
 
         user_texts = self.data["user_text"].astype(str).tolist()
+        forced_backend = os.getenv("AI_EMBEDDING_BACKEND", "").strip().lower()
+        if forced_backend == "tfidf":
+            self.model = None
+            self.vectorizer = TfidfVectorizer()
+            self._embeddings = self.vectorizer.fit_transform(user_texts).toarray()
+            norms = np.linalg.norm(self._embeddings, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            self._embeddings = self._embeddings / norms
+            self.backend = "tfidf"
+            return
+
         try:
             if self.model is None:
                 from sentence_transformers import SentenceTransformer
