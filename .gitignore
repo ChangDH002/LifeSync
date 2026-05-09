@@ -44,3 +44,11 @@ mongodb-data/
 
 # Design/source artifacts not needed for deploy
 *.psd
+
+# ML model cache
+.cache/
+huggingface/
+sentence_transformers/
+
+# Generated dataset (re-generated on deploy)
+# app/data/dementia_question_dataset_7000.csv  # keep committed as seed

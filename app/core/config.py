@@ -26,6 +26,12 @@ class Settings(BaseSettings):
 
     ai_chatbot_url: str = "http://localhost:8001"
 
+    # Gemini AI
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
+    sbert_model_name: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    sbert_dataset_path: str = "app/data/dementia_question_dataset_7000.csv"
+
     social_state_secret: str = "change-me-in-production"
     social_state_expires_minutes: int = 10
     social_redirect_allowlist: str = ""

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.db import close_db, connect_db
+from app.routers import ai
 from app.routers import auth
 from app.routers import avatar
 from app.routers import chatbot
@@ -32,6 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(ai.router, prefix="/ai", tags=["ai"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(social_auth.router, prefix="/auth/social", tags=["social_auth"])
 app.include_router(chatbot.router, prefix="/chatbot", tags=["chatbot"])

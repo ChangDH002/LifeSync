@@ -5,13 +5,23 @@ from app.core.jwt import decode_access_token
 from app.db import get_db
 from app.repositories.chat_session import get_session, get_sessions_by_user
 from app.schemas.chatbot import (
+    AIChatRequest,
+    AIChatResponse,
     ChatMessageRequest,
     ChatMessageResponse,
     ChatSessionDetail,
     ChatSessionMessage,
     ChatSessionSummary,
+    RetrievedContext,
 )
 from app.services import chatbot as chatbot_service
+from app.services import gemini_service, sbert_retriever
+from app.services.prompt_builder import (
+    build_chat_prompt,
+    build_context_string,
+    extract_related_topics,
+)
+from app.services.gemini_service import SAFETY_NOTICE
 
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -57,6 +67,41 @@ async def list_sessions(
         )
         for r in rows
     ]
+
+
+@router.post("/message", response_model=AIChatResponse)
+async def ai_chat_message(body: AIChatRequest) -> AIChatResponse:
+    retrieved = sbert_retriever.retrieve_context(body.message, top_k=3)
+    context_str = build_context_string(retrieved)
+
+    prompt = build_chat_prompt(
+        message=body.message,
+        persona=body.persona,
+        risk_level=body.riskLevel,
+        main_risk_factors=body.mainRiskFactors,
+        recommendations=body.recommendations,
+        context=context_str,
+    )
+
+    response_text, fallback_used = gemini_service.generate(prompt)
+    related_topics = extract_related_topics(retrieved)
+
+    return AIChatResponse(
+        message=response_text,
+        relatedTopics=related_topics,
+        usedModel=gemini_service.get_model_name() if not fallback_used else "fallback",
+        retrievedContexts=[
+            RetrievedContext(
+                question=r["question"],
+                answer=r["answer"],
+                category=r["category"],
+                score=r["score"],
+            )
+            for r in retrieved
+        ],
+        fallbackUsed=fallback_used,
+        safetyNotice=SAFETY_NOTICE,
+    )
 
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionDetail)
