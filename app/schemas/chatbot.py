@@ -23,6 +23,32 @@ class ChatMessageResponse(BaseModel):
     sources: list[Source] = []
 
 
+# ── AI 챗봇 메시지 (Gemini + SBERT) ─────────────────────────────
+
+class AIChatRequest(BaseModel):
+    message: str
+    persona: str = "생활습관 불균형형"
+    riskLevel: str = "낮음"
+    mainRiskFactors: list[str] = []
+    recommendations: list[str] = []
+
+
+class RetrievedContext(BaseModel):
+    question: str
+    answer: str
+    category: str
+    score: float
+
+
+class AIChatResponse(BaseModel):
+    message: str
+    relatedTopics: list[str] = []
+    usedModel: str
+    retrievedContexts: list[RetrievedContext] = []
+    fallbackUsed: bool
+    safetyNotice: str
+
+
 # ── 세션 목록 / 상세 ────────────────────────────────────────────
 
 class ChatSessionSummary(BaseModel):
