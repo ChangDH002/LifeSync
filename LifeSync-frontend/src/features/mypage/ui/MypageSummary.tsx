@@ -14,7 +14,7 @@ import {
   Sparkles,
   UserCircle2,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
 import { Button, SectionCard } from '@/shared/ui'
 import { useMypage } from '../hooks'
@@ -49,7 +49,7 @@ const quickActions = [
     subtitle: '무엇이든 물어보세요',
     to: '/chatbot',
     icon: MessageCircle,
-    surfaceClassName: 'bg-primaryPale/80',
+    surfaceClassName: 'bg-surface',
     iconWrapClassName: 'bg-primary/15',
     iconClassName: 'text-teal',
   },
@@ -58,7 +58,7 @@ const quickActions = [
     subtitle: '뇌를 자극하세요',
     to: '/training',
     icon: Gamepad2,
-    surfaceClassName: 'bg-violet-50',
+    surfaceClassName: 'bg-surface',
     iconWrapClassName: 'bg-violet-100',
     iconClassName: 'text-violet-500',
   },
@@ -278,26 +278,23 @@ export function MypageSummary() {
           <div className="flex flex-col gap-5">
             {quickActions.map((item) => (
               <SectionCard key={item.title} className={`p-6 ${item.surfaceClassName}`}>
-                <Button
-                  asLink
-                  className="h-auto min-h-0 w-full justify-start bg-transparent px-0 py-0 text-left text-inherit shadow-none hover:translate-y-0 hover:shadow-none"
+                <Link
+                  className="flex w-full items-center gap-4 text-left"
                   to={item.to}
                 >
-                  <span className="flex w-full items-center gap-4">
-                    <span
-                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${item.iconWrapClassName}`}
-                    >
-                      <item.icon className={`h-7 w-7 ${item.iconClassName}`} strokeWidth={2.2} />
-                    </span>
-                    <span className="flex-1">
-                      <span className="block text-2xl font-bold tracking-[-0.02em] text-tealDark">
-                        {item.title}
-                      </span>
-                      <span className="mt-1 block text-lg text-contentMid">{item.subtitle}</span>
-                    </span>
-                    <ArrowRight className="h-5 w-5 text-contentLight" strokeWidth={2.2} />
+                  <span
+                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${item.iconWrapClassName}`}
+                  >
+                    <item.icon className={`h-7 w-7 ${item.iconClassName}`} strokeWidth={2.2} />
                   </span>
-                </Button>
+                  <span className="flex-1">
+                    <span className="block text-2xl font-bold tracking-[-0.02em] text-tealDark">
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block text-lg text-contentMid">{item.subtitle}</span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-contentLight" strokeWidth={2.2} />
+                </Link>
               </SectionCard>
             ))}
           </div>

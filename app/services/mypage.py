@@ -12,6 +12,7 @@ from app.schemas.mypage import (
     MypageTabSection,
     MypageUserProfile,
 )
+from app.services import survey as survey_service
 
 
 def _today_utc() -> datetime:
@@ -127,6 +128,24 @@ async def _get_recent_activities(user_id: str, limit: int = 5) -> list[MypageAct
     return activities
 
 
+def _format_survey_date(dt: datetime) -> str:
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%d")
+
+
+def _build_survey_bullets(category_scores: dict[str, int]) -> list[str]:
+    if not category_scores:
+        return ["영역별 설문 결과가 없습니다."]
+
+    sorted_scores = sorted(category_scores.items(), key=lambda item: (-item[1], item[0]))
+    bullets = []
+    for category, score in sorted_scores:
+        tone = "주의" if score >= 3 else "양호"
+        bullets.append(f"{category}: {score}점 ({tone})")
+    return bullets
+
+
 def _build_tabs(
     streak_days: int,
     weekly_achievement_rate: int,
@@ -136,6 +155,8 @@ def _build_tabs(
     training_bullets: list[str] = []
     game_counts: dict[str, int] = {}
     for act in recent_activities:
+        if act.type != "training":
+            continue
         game_counts[act.title] = game_counts.get(act.title, 0) + 1
     for title, count in list(game_counts.items())[:3]:
         training_bullets.append(f"{title} {count}회")
@@ -172,6 +193,7 @@ async def get_mypage_summary(user_id: str, user_doc: dict[str, Any]) -> MypageSu
     streak_days = await _calc_streak(user_id, today)
     weekly_achievement_rate, training_count = await _calc_weekly_stats(user_id, week_start)
     recent_activities = await _get_recent_activities(user_id)
+    latest_survey = await survey_service.get_latest_dementia_risk_survey(user_id)
 
     summary_metrics = MypageSummaryMetrics(
         streakDays=streak_days,
@@ -181,13 +203,40 @@ async def get_mypage_summary(user_id: str, user_doc: dict[str, Any]) -> MypageSu
         trainingCompletedCount=training_count,
     )
 
-    survey_banner = MypageSurveyBanner(
-        needsUpdate=True,
-        bannerTitle="생활습관 설문을 작성해주세요",
-        bannerDescription="설문을 통해 현재 상태를 파악하고 맞춤형 루틴 추천을 받아보세요.",
-    )
+    if latest_survey is not None:
+        submitted_at = latest_survey.get("submitted_at", datetime.now(timezone.utc))
+        survey_banner = MypageSurveyBanner(
+            needsUpdate=False,
+            bannerTitle=f"최근 치매 위험도: {latest_survey.get('risk_level', '결과 없음')}",
+            bannerDescription=f"{_format_survey_date(submitted_at)} 기준 설문 결과가 저장되어 있습니다.",
+        )
+        recent_activities.insert(
+            0,
+            MypageActivity(
+                title="치매 위험도 설문 저장",
+                detail=_format_survey_date(submitted_at),
+                type="survey",
+            ),
+        )
+        recent_activities = recent_activities[:5]
+    else:
+        survey_banner = MypageSurveyBanner(
+            needsUpdate=True,
+            bannerTitle="생활습관 설문을 작성해주세요",
+            bannerDescription="설문을 통해 현재 상태를 파악하고 맞춤형 루틴 추천을 받아보세요.",
+        )
 
     tabs = _build_tabs(streak_days, weekly_achievement_rate, training_count, recent_activities)
+    if latest_survey is not None:
+        category_scores = latest_survey.get("category_scores", {})
+        tabs["survey"] = MypageTabSection(
+            heading="최근 치매 위험도 설문 결과",
+            description=(
+                f"총 {latest_survey.get('total_score', 0)}점으로 "
+                f"{latest_survey.get('risk_level', '결과 없음')} 단계입니다."
+            ),
+            bullets=_build_survey_bullets(category_scores),
+        )
 
     return MypageSummaryResponse(
         user=user_profile,

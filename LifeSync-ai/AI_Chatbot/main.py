@@ -135,6 +135,7 @@ def health():
     rec_loaded = recommendation_service is not None and recommendation_service.data is not None
     return {
         "model_loaded": bool(model_loaded),
+        "embedding_backend": chatbot_service.backend if chatbot_service is not None else "uninitialized",
         "chatbot_data_loaded": bool(chatbot_loaded),
         "recommendation_data_loaded": bool(rec_loaded),
         "chatbot_question_count": int(len(chatbot_service.data)) if chatbot_loaded else 0,

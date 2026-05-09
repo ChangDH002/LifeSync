@@ -1,6 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ROUTE_PATHS } from '@/shared/config';
 
 export function InfoActionBanner() {
+  const navigate = useNavigate();
+
   return (
     // StyleGuide: 주요 CTA는 teal~primary 계열 사용, 시니어 친화적 거대 버튼
     <div className="w-full max-w-[800px] mx-auto bg-tealDark rounded-[24px] p-[30px] md:p-[40px] text-center shadow-lg mb-10">
@@ -12,7 +16,11 @@ export function InfoActionBanner() {
         나에게 딱 맞는 맞춤형 인지훈련을 추천받으세요.
       </p>
       
-      <button className="w-full md:w-auto bg-secondary hover:bg-[#b86d30] text-surface text-[20px] md:text-[22px] font-bold py-[16px] px-[40px] rounded-full border-none cursor-pointer transition-colors shadow-md">
+      <button
+        className="w-full md:w-auto bg-secondary hover:bg-[#b86d30] text-surface text-[20px] md:text-[22px] font-bold py-[16px] px-[40px] rounded-full border-none cursor-pointer transition-colors shadow-md"
+        onClick={() => navigate(ROUTE_PATHS.survey)}
+        type="button"
+      >
         치매 위험도 자가진단 시작하기 ➔
       </button>
     </div>

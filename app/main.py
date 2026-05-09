@@ -11,6 +11,7 @@ from app.routers import chatbot
 from app.routers import mypage
 from app.routers import routines
 from app.routers import social_auth
+from app.routers import survey
 from app.routers import training
 
 
@@ -35,6 +36,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(social_auth.router, prefix="/auth/social", tags=["social_auth"])
 app.include_router(chatbot.router, prefix="/chatbot", tags=["chatbot"])
 app.include_router(training.router, prefix="/training", tags=["training"])
+app.include_router(survey.router, prefix="/survey", tags=["survey"])
 app.include_router(avatar.router, prefix="/avatar", tags=["avatar"])
 app.include_router(mypage.router, prefix="/mypage", tags=["mypage"])
 app.include_router(routines.router, prefix="/routines", tags=["routines"])

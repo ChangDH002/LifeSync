@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 FALLBACK_RECOMMENDATION = {
@@ -35,14 +36,12 @@ class RecommendationService:
 
         # ChatbotService 모델 인스턴스를 재사용해 메모리 절약
         self.model: Any = sbert_model
+        self.vectorizer: TfidfVectorizer | None = None
         self.data: pd.DataFrame | None = None
         self._embeddings: np.ndarray | None = None
+        self.backend: str = "uninitialized"
 
     def load(self) -> None:
-        if self.model is None:
-            from sentence_transformers import SentenceTransformer
-            self.model = SentenceTransformer(self.model_path)
-
         self.data = pd.read_csv(self.csv_path)
         required = {"user_text", "recommendation_title", "recommendation_text"}
         if not required.issubset(self.data.columns):
@@ -51,24 +50,48 @@ class RecommendationService:
             )
 
         user_texts = self.data["user_text"].astype(str).tolist()
-        self._embeddings = self.model.encode(
-            user_texts,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=True,
-        )
+        try:
+            if self.model is None:
+                from sentence_transformers import SentenceTransformer
+
+                self.model = SentenceTransformer(self.model_path)
+
+            self._embeddings = self.model.encode(
+                user_texts,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+                show_progress_bar=True,
+            )
+            self.backend = "sbert"
+        except Exception:
+            self.model = None
+            self.vectorizer = TfidfVectorizer()
+            self._embeddings = self.vectorizer.fit_transform(user_texts).toarray()
+            norms = np.linalg.norm(self._embeddings, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            self._embeddings = self._embeddings / norms
+            self.backend = "tfidf"
 
     def recommend(self, message: str) -> dict[str, Any]:
         if self.model is None or self.data is None or self._embeddings is None:
-            raise RuntimeError(
-                "RecommendationService.load() must be called before recommend()"
-            )
+            if self.backend != "tfidf" or self.data is None or self._embeddings is None:
+                raise RuntimeError(
+                    "RecommendationService.load() must be called before recommend()"
+                )
 
-        query_emb = self.model.encode(
-            message,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-        )
+        if self.backend == "sbert":
+            query_emb = self.model.encode(
+                message,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+            )
+        else:
+            if self.vectorizer is None:
+                raise RuntimeError("TF-IDF vectorizer is not initialized")
+            query_emb = self.vectorizer.transform([message]).toarray()[0]
+            norm = np.linalg.norm(query_emb)
+            if norm != 0:
+                query_emb = query_emb / norm
 
         scores: np.ndarray = self._embeddings @ query_emb
         best_idx = int(np.argmax(scores))

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/features/auth/hooks';
+import { surveyApi } from '../api';
 import { useSurvey } from '../hooks';
-import { SurveyQuestion } from '../types';
-import { Home, X } from 'lucide-react';
+import { SurveyQuestion, SurveyResponse } from '../types';
+import { X } from 'lucide-react';
 
 const SURVEY_DATA: SurveyQuestion[] = [
   // 수면 영역
@@ -44,6 +46,7 @@ export function DementiaSurvey() {
     currentQuestion, 
     progress, 
     isFinished, 
+    responses,
     yesCount, 
     categoryScores,
     handleAnswer,
@@ -51,7 +54,13 @@ export function DementiaSurvey() {
   } = useSurvey(SURVEY_DATA);
 
   if (isFinished) {
-    return <SurveyResultView yesCount={yesCount} categoryScores={categoryScores} />;
+    return (
+      <SurveyResultView
+        yesCount={yesCount}
+        categoryScores={categoryScores}
+        responses={responses}
+      />
+    );
   }
 
   return (
@@ -105,8 +114,19 @@ export function DementiaSurvey() {
 }
 
 //설문 결과 뷰 컴포넌트
-function SurveyResultView({ yesCount, categoryScores }: { yesCount: number; categoryScores: Record<string, number> }) {
+function SurveyResultView({
+  yesCount,
+  categoryScores,
+  responses,
+}: {
+  yesCount: number;
+  categoryScores: Record<string, number>;
+  responses: SurveyResponse[];
+}) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const hasSavedRef = useRef(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated'>('idle');
 
   const getResult = () => {
     // 위험도 산출 기준 (낮음:0-6, 보통:7-14, 높음:15-24)
@@ -138,6 +158,65 @@ function SurveyResultView({ yesCount, categoryScores }: { yesCount: number; cate
 
   const result = getResult();
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function saveSurveyResult() {
+      if (hasSavedRef.current) {
+        return;
+      }
+      hasSavedRef.current = true;
+
+      if (!isAuthenticated) {
+        setSaveState('unauthenticated');
+        return;
+      }
+
+      setSaveState('saving');
+
+      try {
+        await surveyApi.saveDementiaRiskResult({
+          surveyType: 'dementia-risk',
+          totalScore: yesCount,
+          riskLevel: result.status,
+          categoryScores,
+          responses,
+        });
+
+        if (!cancelled) {
+          setSaveState('saved');
+        }
+      } catch (error) {
+        console.error('survey result save failed', error);
+        if (!cancelled) {
+          setSaveState('error');
+        }
+      }
+    }
+
+    void saveSurveyResult();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryScores, isAuthenticated, responses, result.status, yesCount]);
+
+  const saveStatusMessage = (() => {
+    if (saveState === 'saving') {
+      return '설문 결과를 저장하고 있습니다.';
+    }
+    if (saveState === 'saved') {
+      return '설문 결과가 백엔드에 저장되었습니다.';
+    }
+    if (saveState === 'error') {
+      return '설문 결과 저장에 실패했습니다. 잠시 후 다시 시도해주세요.';
+    }
+    if (saveState === 'unauthenticated') {
+      return '로그인하면 설문 결과가 마이페이지에 저장됩니다.';
+    }
+    return '';
+  })();
+
   return (
     <div className="max-w-[600px] mx-auto bg-surface rounded-[30px] p-8 shadow-lg border-2 border-primaryPale text-center animate-fadeIn">
       <div className={`text-[24px] font-bold ${result.color} mb-4`}>{result.status} ({yesCount}점)</div>
@@ -160,6 +239,15 @@ function SurveyResultView({ yesCount, categoryScores }: { yesCount: number; cate
         {"\n\n"}
         <span className="text-[18px] text-contentLight opacity-80">※ 본 결과는 의료 진단이 아닌 생활습관 분석용입니다.</span>
       </p>
+      {saveStatusMessage ? (
+        <p
+          className={`mb-8 text-[18px] font-medium ${
+            saveState === 'error' ? 'text-red-500' : 'text-contentMid'
+          }`}
+        >
+          {saveStatusMessage}
+        </p>
+      ) : null}
       
       <div className="flex flex-col gap-5 mt-4">
         <button 

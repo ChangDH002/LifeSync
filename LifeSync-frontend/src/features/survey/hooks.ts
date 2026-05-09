@@ -31,14 +31,19 @@ const handleAnswer = (answer: string) => {
     }
   };
 
-  const categoryScores = responses.reduce((acc, curr) => {
+  const categoryScores = questions.reduce((acc, question) => {
+    const category = question.category || "기타";
+    acc[category] = 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  responses.forEach((curr) => {
     const question = questions.find(q => q.id === curr.questionId);
     if (question && curr.answer === question.riskAnswer) {
       const cat = question.category || "기타";
-      acc[cat] = (acc[cat] || 0) + 1;
+      categoryScores[cat] = (categoryScores[cat] || 0) + 1;
     }
-    return acc;
-  }, {} as Record<string, number>);
+  });
 
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
@@ -47,6 +52,7 @@ const handleAnswer = (answer: string) => {
     currentQuestion: questions[currentIndex],
     progress,
     isFinished,
+    responses,
     yesCount, 
     categoryScores,
     handleAnswer,

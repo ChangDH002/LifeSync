@@ -36,6 +36,7 @@ async def connect_db() -> None:
     )
     await db.chat_sessions.create_index("session_id", unique=True)
     await db.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
+    await db.survey_results.create_index([("user_id", 1), ("survey_type", 1), ("submitted_at", -1)])
 
 
 async def close_db() -> None:

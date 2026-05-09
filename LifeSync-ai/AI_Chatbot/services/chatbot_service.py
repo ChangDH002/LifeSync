@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 FALLBACK_ANSWER = (
@@ -28,14 +29,12 @@ class ChatbotService:
         self.threshold = threshold
 
         self.model: Any = None
+        self.vectorizer: TfidfVectorizer | None = None
         self.data: pd.DataFrame | None = None
         self._embeddings: np.ndarray | None = None
+        self.backend: str = "uninitialized"
 
     def load(self) -> None:
-        from sentence_transformers import SentenceTransformer
-
-        self.model = SentenceTransformer(self.model_path)
-
         self.data = pd.read_csv(self.csv_path)
         required = {"question", "answer"}
         if not required.issubset(self.data.columns):
@@ -44,22 +43,45 @@ class ChatbotService:
             )
 
         questions = self.data["question"].astype(str).tolist()
-        self._embeddings = self.model.encode(
-            questions,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=True,
-        )
+        try:
+            from sentence_transformers import SentenceTransformer
+
+            self.model = SentenceTransformer(self.model_path)
+            self._embeddings = self.model.encode(
+                questions,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+                show_progress_bar=True,
+            )
+            self.backend = "sbert"
+        except Exception:
+            # Offline-safe fallback for local development when model weights are missing.
+            self.model = None
+            self.vectorizer = TfidfVectorizer()
+            self._embeddings = self.vectorizer.fit_transform(questions).toarray()
+            norms = np.linalg.norm(self._embeddings, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            self._embeddings = self._embeddings / norms
+            self.backend = "tfidf"
 
     def answer(self, message: str) -> dict[str, Any]:
         if self.model is None or self.data is None or self._embeddings is None:
-            raise RuntimeError("ChatbotService.load() must be called before answer()")
+            if self.backend != "tfidf" or self.data is None or self._embeddings is None:
+                raise RuntimeError("ChatbotService.load() must be called before answer()")
 
-        query_emb = self.model.encode(
-            message,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-        )
+        if self.backend == "sbert":
+            query_emb = self.model.encode(
+                message,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+            )
+        else:
+            if self.vectorizer is None:
+                raise RuntimeError("TF-IDF vectorizer is not initialized")
+            query_emb = self.vectorizer.transform([message]).toarray()[0]
+            norm = np.linalg.norm(query_emb)
+            if norm != 0:
+                query_emb = query_emb / norm
 
         # 코사인 유사도 (임베딩이 이미 정규화됐으므로 내적 = 코사인 유사도)
         scores: np.ndarray = self._embeddings @ query_emb

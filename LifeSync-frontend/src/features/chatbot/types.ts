@@ -16,6 +16,25 @@ export interface ChatbotSession {
   title?: string
 }
 
+export interface ChatSessionSummary {
+  session_id: string
+  title: string
+  message_count: number
+  updated_at: string
+}
+
+export interface ChatSessionDetailMessage {
+  role: ChatMessageRole | string
+  content: string
+  timestamp: string
+}
+
+export interface ChatSessionDetail {
+  session_id: string
+  title: string
+  messages: ChatSessionDetailMessage[]
+}
+
 export interface ChatbotSendMessageRequest {
   sessionId?: string
   message: string

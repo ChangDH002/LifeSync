@@ -14,3 +14,19 @@ export interface SurveyResponse {
   questionId: string
   answer: string
 }
+
+export interface DementiaSurveySubmitRequest {
+  surveyType: 'dementia-risk'
+  totalScore: number
+  riskLevel: string
+  categoryScores: Record<string, number>
+  responses: SurveyResponse[]
+}
+
+export interface DementiaSurveySubmitResponse {
+  surveyId: string
+  surveyType: string
+  totalScore: number
+  riskLevel: string
+  submittedAt: string
+}

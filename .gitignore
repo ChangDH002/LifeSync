@@ -2,6 +2,8 @@
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 
 # Python
 __pycache__/
@@ -12,6 +14,7 @@ __pycache__/
 venv/
 .venv/
 env/
+*.log
 
 # Tools / IDE
 .pytest_cache/
@@ -26,7 +29,18 @@ build/
 # OS
 Thumbs.db
 Desktop.ini
+.DS_Store
+__MACOSX/
+
+# Local runtime artifacts
+.local/
+mongodb-data/
+*.pid
+*.seed
 
 # GIT
 .git
 .cursor
+
+# Design/source artifacts not needed for deploy
+*.psd
