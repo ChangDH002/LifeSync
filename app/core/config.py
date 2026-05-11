@@ -11,7 +11,12 @@ class Settings(BaseSettings):
     mongodb_url: str = "mongodb://localhost:27017"
     database_name: str = "dementia_app"
     secret_key: str = "change-me-in-production"
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    cors_origins: str = (
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "http://localhost:3000,"
+        "http://127.0.0.1:3000"
+    )
 
     jwt_secret_key: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
