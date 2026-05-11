@@ -70,42 +70,36 @@ def _fallback_response(prompt: str) -> str:
         return (
             "규칙적인 신체 활동은 뇌 혈류를 늘려 인지 기능 유지에 도움을 줍니다. "
             "하루 30분 걷기부터 시작해 보시면 좋겠습니다. "
-            "새로운 운동을 배우는 것도 뇌 자극에 효과적입니다. "
-            f"{SAFETY_NOTICE}"
+            "새로운 운동을 배우는 것도 뇌 자극에 효과적입니다."
         )
     if "수면" in prompt_lower or "잠" in prompt_lower:
         return (
             "충분하고 규칙적인 수면은 뇌의 노폐물 제거와 기억 정리에 중요합니다. "
             "매일 같은 시간에 자고 일어나는 습관을 만들어 보세요. "
-            "취침 전 스마트폰 사용을 줄이면 수면의 질이 올라갑니다. "
-            f"{SAFETY_NOTICE}"
+            "취침 전 스마트폰 사용을 줄이면 수면의 질이 올라갑니다."
         )
     if "식습관" in prompt_lower or "음식" in prompt_lower or "식단" in prompt_lower:
         return (
             "등 푸른 생선, 견과류, 베리류, 녹색 채소가 뇌 건강에 도움이 된다고 알려져 있습니다. "
             "지중해식 식단을 참고하여 균형 잡힌 식사를 해 보세요. "
-            "하루 6~8잔의 물을 마시는 것도 중요합니다. "
-            f"{SAFETY_NOTICE}"
+            "하루 6~8잔의 물을 마시는 것도 중요합니다."
         )
     if "인지" in prompt_lower or "두뇌" in prompt_lower or "퍼즐" in prompt_lower:
         return (
             "독서, 퍼즐, 새로운 취미 배우기 등 다양한 인지 자극 활동이 뇌 가소성을 높여줍니다. "
             "매일 조금씩 꾸준히 실천하는 것이 중요합니다. "
-            "새로운 것을 배우는 활동일수록 더 큰 자극이 됩니다. "
-            f"{SAFETY_NOTICE}"
+            "새로운 것을 배우는 활동일수록 더 큰 자극이 됩니다."
         )
     if "사회" in prompt_lower or "대화" in prompt_lower or "외로" in prompt_lower:
         return (
             "가족, 친구와의 정기적인 교류는 뇌를 지속적으로 자극하여 인지 기능 유지에 도움이 됩니다. "
             "지역 복지관이나 치매안심센터의 프로그램에 참여해 보시는 것도 좋습니다. "
-            "전화나 영상통화로 자주 소통하는 것도 좋은 방법입니다. "
-            f"{SAFETY_NOTICE}"
+            "전화나 영상통화로 자주 소통하는 것도 좋은 방법입니다."
         )
     return (
         "건강한 생활습관(규칙적인 운동, 균형 잡힌 식사, 충분한 수면, 사회적 교류)이 "
         "뇌 건강 유지에 큰 도움이 됩니다. "
-        "걱정되시는 부분이 있다면 가까운 보건소 치매안심센터를 방문해 보세요. "
-        f"{SAFETY_NOTICE}"
+        "걱정되시는 부분이 있다면 가까운 보건소 치매안심센터를 방문해 보세요."
     )
 
 
@@ -146,7 +140,6 @@ def generate_chat_response(
         f"주요 위험 요인: {', '.join(main_risk_factors) if main_risk_factors else '없음'}\n"
         f"추천 활동: {', '.join(recommendations[:3]) if recommendations else '없음'}\n"
         f"참고 정보:\n{context}\n\n"
-        f"사용자 질문: {message}\n\n"
-        f"마지막에 반드시 '{SAFETY_NOTICE}'를 포함해 주세요."
+        f"사용자 질문: {message}"
     )
     return generate(prompt)

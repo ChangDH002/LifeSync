@@ -40,8 +40,7 @@ def build_chat_prompt(
         f"주요 위험 요인: {factors_str}\n"
         f"추천 활동: {recs_str}\n"
         f"참고 정보:\n{context}\n\n"
-        f"사용자 질문: {message}\n\n"
-        f"마지막에 반드시 '{SAFETY_NOTICE}'를 포함하세요."
+        f"사용자 질문: {message}"
     )
 
 
