@@ -19,6 +19,8 @@ from app.routers import training
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
+    from app.services.users import seed_dev_user
+    await seed_dev_user()
     yield
     await close_db()
 
