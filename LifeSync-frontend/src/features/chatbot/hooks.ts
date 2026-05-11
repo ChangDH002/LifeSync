@@ -84,13 +84,14 @@ export const useChatbot = () => {
 
     try {
       const response = await chatbotApi.sendMessage({
-        sessionId,
         message: trimmedMessage,
-        history: nextMessages.map(({ role, content }) => ({ role, content })),
+        persona: '생활습관 불균형형',
+        riskLevel: 'medium',
+        mainRiskFactors: [],
+        recommendations: [],
       })
 
-      setSessionId(response.sessionId)
-      setMessages((prev) => [...prev, createMessage('assistant', response.answer)])
+      setMessages((prev) => [...prev, createMessage('assistant', response.message)])
       await loadSessions()
     } catch (sendError) {
       console.error(sendError)
