@@ -91,7 +91,10 @@ export const useChatbot = () => {
         recommendations: [],
       })
 
-      setMessages((prev) => [...prev, createMessage('assistant', response.message)])
+      const bubbleText = response.message
+        .replace(/\s*본 서비스는 의료적 진단을 제공하지 않습니다\.?\s*$/u, '')
+        .trim()
+      setMessages((prev) => [...prev, createMessage('assistant', bubbleText)])
       await loadSessions()
     } catch (sendError) {
       console.error(sendError)
