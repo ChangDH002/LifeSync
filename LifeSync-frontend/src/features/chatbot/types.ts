@@ -49,3 +49,21 @@ export interface ChatbotSendMessageResponse {
     url?: string
   }>
 }
+
+// ── AI 챗봇 메시지 (POST /chatbot/message) ───────────────────────
+
+export interface AIChatRequest {
+  message: string
+  persona?: string
+  riskLevel?: string
+  mainRiskFactors?: string[]
+  recommendations?: string[]
+}
+
+export interface AIChatResponse {
+  message: string
+  relatedTopics: string[]
+  usedModel: string
+  fallbackUsed: boolean
+  safetyNotice: string
+}
