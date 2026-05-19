@@ -1,16 +1,28 @@
+import { useEffect } from 'react'
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
 import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
 
 export function AttentionGame() {
-  const { activeButton, clickedButton, feedbackMessage, feedbackTone, sequence, isPlaying, handleButtonClick, start } =
+  const { activeButton, clickedButton, completedRounds, feedbackMessage, feedbackTone, sequence, isPlaying, handleButtonClick, start } =
     useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
-  const { reportParticipation } = useTrainingActivityReporter({
+  const { reportCompletion } = useTrainingActivityReporter({
     gameCategory: 'attention',
     gameName: '순서 따라가기',
   })
+
+  useEffect(() => {
+    if (completedRounds < 1) {
+      return
+    }
+
+    void reportCompletion({
+      trainingTitle: '순서 따라가기',
+      completedRounds,
+    })
+  }, [completedRounds, reportCompletion])
 
   const buttons = [
     { id: 0, color: 'bg-red-500', activeColor: 'bg-red-300 shadow-[0_0_40px_rgba(239,68,68,0.8)]', label: '빨강' },
@@ -34,9 +46,6 @@ export function AttentionGame() {
               isMobile ? 'px-8 py-4 text-xl' : 'px-12 py-6 text-3xl'
             )}
             onClick={() => {
-              void reportParticipation({
-                trainingTitle: '순서 따라가기',
-              })
               start()
             }}
             type="button"
@@ -85,10 +94,6 @@ export function AttentionGame() {
               isMobile ? 'min-h-[110px]' : isWeb ? 'min-h-[220px]' : 'min-h-[170px]',
             )}
             onClick={() => {
-              void reportParticipation({
-                trainingTitle: '순서 따라가기',
-                currentStage: sequence.length,
-              })
               handleButtonClick(btn.id)
             }}
             type="button"

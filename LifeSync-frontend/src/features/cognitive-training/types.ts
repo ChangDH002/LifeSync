@@ -39,7 +39,7 @@ export interface TrainingHistory {
 export interface TrainingParticipationSyncRequest {
   gameCategory: TrainingCategory
   gameName: string
-  eventType: 'participated'
+  eventType: 'participated' | 'completed'
   occurredAt: string
   attendanceCandidate: boolean
   wateringChanceCandidate: boolean
