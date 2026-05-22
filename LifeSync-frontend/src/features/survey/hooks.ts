@@ -10,16 +10,19 @@ export function useSurvey(questions: SurveyQuestion[]) {
 
 const handleAnswer = (answer: string) => {
     const currentQuestion = questions[currentIndex];
+    const selectedOption = currentQuestion.options.find((option) => option.value === answer);
 
-    // riskAnswer와 사용자의 선택이 같으면 점수 추가
-    if (answer === currentQuestion.riskAnswer) {
-      setYesCount(prev => prev + 1);
+    if (!selectedOption) {
+      return;
     }
+
+    setYesCount(prev => prev + selectedOption.score);
 
     // 응답 기록 저장
     const newResponse: SurveyResponse = {
       questionId: currentQuestion.id,
-      answer: answer
+      answer: answer,
+      score: selectedOption.score,
     };
     setResponses(prev => [...prev, newResponse]);
 
@@ -39,9 +42,9 @@ const handleAnswer = (answer: string) => {
 
   responses.forEach((curr) => {
     const question = questions.find(q => q.id === curr.questionId);
-    if (question && curr.answer === question.riskAnswer) {
+    if (question) {
       const cat = question.category || "기타";
-      categoryScores[cat] = (categoryScores[cat] || 0) + 1;
+      categoryScores[cat] = (categoryScores[cat] || 0) + curr.score;
     }
   });
 
@@ -60,8 +63,8 @@ const handleAnswer = (answer: string) => {
       if (currentIndex > 0) {
         // 이전으로 돌아갈 때 점수 차감 로직
         const lastResponse = responses[responses.length - 1];
-        if (lastResponse && lastResponse.answer === questions[currentIndex - 1].riskAnswer) {
-          setYesCount(prev => prev - 1);
+        if (lastResponse) {
+          setYesCount(prev => prev - lastResponse.score);
         }
         setResponses(prev => prev.slice(0, -1));
         setCurrentIndex(prev => prev - 1);

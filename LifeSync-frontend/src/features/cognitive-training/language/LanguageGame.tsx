@@ -1,15 +1,27 @@
+import { useEffect } from 'react'
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
 import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
 
 export function LanguageGame() {
-  const { quiz, shuffledChars, userAnswer, isCorrect, score, handleCharClick } = useCognitiveTraining()
+  const { quiz, shuffledChars, userAnswer, isCorrect, isTrainingComplete, score, handleCharClick } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
-  const { reportParticipation } = useTrainingActivityReporter({
+  const { reportCompletion } = useTrainingActivityReporter({
     gameCategory: 'language',
     gameName: '단어 완성하기',
   })
+
+  useEffect(() => {
+    if (!isTrainingComplete) {
+      return
+    }
+
+    void reportCompletion({
+      trainingTitle: '단어 완성하기',
+      finalScore: score,
+    })
+  }, [isTrainingComplete, reportCompletion, score])
 
   return (
     <div
@@ -60,10 +72,6 @@ export function LanguageGame() {
               isMobile ? 'h-16 w-16 text-2xl' : 'h-24 w-24 text-4xl'
             )}
             onClick={() => {
-              void reportParticipation({
-                trainingTitle: '단어 완성하기',
-                currentScore: score,
-              })
               handleCharClick(char, idx)
             }}
             type="button"

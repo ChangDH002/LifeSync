@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { GameLayout } from '../ui/GameLayout'
 import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from '../memory/hooks'
@@ -18,12 +19,23 @@ export function CardFlipGame() {
     timeLeft,
   } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
-  const { reportParticipation } = useTrainingActivityReporter({
+  const { reportCompletion } = useTrainingActivityReporter({
     gameCategory: 'memory',
     gameName: '카드 짝 맞추기',
   })
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0')
   const seconds = String(timeLeft % 60).padStart(2, '0')
+
+  useEffect(() => {
+    if (!isGameOver) {
+      return
+    }
+
+    void reportCompletion({
+      trainingTitle: '카드 짝 맞추기',
+      remainingTime: timeLeft,
+    })
+  }, [isGameOver, reportCompletion, timeLeft])
 
   return (
     <GameLayout title="하루 5분 회상 퀴즈" description="똑같은 그림 카드 2장을 찾아 기억력을 천천히 깨워보세요.">
@@ -72,10 +84,6 @@ export function CardFlipGame() {
                     isMobile ? 'h-24' : isWeb ? 'h-32' : 'h-28',
                   )}
                   onClick={() => {
-                    void reportParticipation({
-                      trainingTitle: '카드 짝 맞추기',
-                      timeLeft,
-                    })
                     flipCard(card.id)
                   }}
                   type="button"

@@ -13,6 +13,7 @@ export const useCognitiveTraining = () => {
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
+  const [isTrainingComplete, setIsTrainingComplete] = useState(false);
 
   const initQuiz = useCallback(() => {
     const word = WORD_QUIZ[currentIdx].answer;
@@ -21,6 +22,7 @@ export const useCognitiveTraining = () => {
     setShuffledChars(chars);
     setUserAnswer('');
     setIsCorrect(null);
+    setIsTrainingComplete(false);
   }, [currentIdx]);
 
   useEffect(() => { initQuiz(); }, [initQuiz]);
@@ -41,7 +43,10 @@ export const useCognitiveTraining = () => {
         setScore(prev => prev + 25);
         setTimeout(() => {
           if (currentIdx < WORD_QUIZ.length - 1) setCurrentIdx(prev => prev + 1);
-          else alert("모든 문제를 풀었습니다!");
+          else {
+            setIsTrainingComplete(true);
+            alert("모든 문제를 풀었습니다!");
+          }
         }, 1200);
       } else {
         setIsCorrect(false);
@@ -55,6 +60,7 @@ export const useCognitiveTraining = () => {
     shuffledChars, 
     userAnswer, 
     isCorrect, 
+    isTrainingComplete,
     score,
     handleCharClick,
     resetQuiz: initQuiz 

@@ -17,27 +17,27 @@ export const useTrainingActivityReporter = ({
   gameCategory,
   gameName,
 }: UseTrainingActivityReporterOptions) => {
-  const hasReportedRef = useRef(false)
+  const hasReportedCompletionRef = useRef(false)
   const [isReporting, setIsReporting] = useState(false)
   const [lastSyncResponse, setLastSyncResponse] = useState<TrainingParticipationSyncResponse | null>(
     null,
   )
 
-  const reportParticipation = async (
+  const reportCompletion = async (
     metadata?: Record<string, string | number | boolean>,
   ) => {
-    if (hasReportedRef.current) {
+    if (hasReportedCompletionRef.current) {
       return lastSyncResponse
     }
 
-    hasReportedRef.current = true
+    hasReportedCompletionRef.current = true
     setIsReporting(true)
 
     try {
       const response = await cognitiveTrainingApi.reportParticipation({
         gameCategory,
         gameName,
-        eventType: 'participated',
+        eventType: 'completed',
         occurredAt: new Date().toISOString(),
         attendanceCandidate: true,
         wateringChanceCandidate: true,
@@ -48,7 +48,7 @@ export const useTrainingActivityReporter = ({
       return response
     } catch (error) {
       console.error('training participation sync failed', error)
-      hasReportedRef.current = false
+      hasReportedCompletionRef.current = false
       return null
     } finally {
       setIsReporting(false)
@@ -58,6 +58,6 @@ export const useTrainingActivityReporter = ({
   return {
     isReporting,
     lastSyncResponse,
-    reportParticipation,
+    reportCompletion,
   }
 }

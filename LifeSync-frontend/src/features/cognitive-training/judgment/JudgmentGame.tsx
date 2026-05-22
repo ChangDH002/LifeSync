@@ -8,7 +8,7 @@ export function JudgmentGame() {
   const navigate = useNavigate();
   const { scenario, selectedIdx, handleSelect, nextScenario, isLast } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
-  const { reportParticipation } = useTrainingActivityReporter({
+  const { reportCompletion } = useTrainingActivityReporter({
     gameCategory: 'judgment',
     gameName: '상황 판단 퀴즈',
   })
@@ -50,10 +50,6 @@ export function JudgmentGame() {
                     : 'border-gray-100 bg-gray-50 opacity-60'
                 } ${isMobile ? 'p-4' : 'p-6'}`}
               onClick={() => {
-                void reportParticipation({
-                  trainingTitle: '상황 판단 퀴즈',
-                  scenarioId: scenario.id,
-                })
                 handleSelect(idx)
               }}
               type="button"
@@ -95,10 +91,10 @@ export function JudgmentGame() {
           <button
           onClick={() => {
             if (isLast) {
-              void reportParticipation({
-              trainingTitle: '상황 판단 퀴즈 완료',
-              scenarioId: scenario.id,
-            });
+              void reportCompletion({
+                trainingTitle: '상황 판단 퀴즈 완료',
+                scenarioId: scenario.id,
+              });
             navigate('/training');
               // alert("모든 문제를 완료했습니다! 홈으로 돌아갑니다.");
             } else {

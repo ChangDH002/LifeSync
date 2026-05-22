@@ -11,6 +11,7 @@ export const useCognitiveTraining = () => {
   const [clickedButton, setClickedButton] = useState<number | null>(null)
   const [feedbackTone, setFeedbackTone] = useState<'default' | 'success' | 'error'>('default')
   const [feedbackMessage, setFeedbackMessage] = useState('훈련 시작하기를 눌러주세요.')
+  const [completedRounds, setCompletedRounds] = useState(0)
 
   const showSequence = useCallback(async (nextSequence: number[]) => {
     setIsPlaying(true)
@@ -63,6 +64,7 @@ export const useCognitiveTraining = () => {
     }
 
     if (nextUserSequence.length === sequence.length) {
+      setCompletedRounds((current) => current + 1)
       setFeedbackTone('success')
       setFeedbackMessage('좋아요! 정확했어요. 다음 단계로 넘어갑니다.')
 
@@ -89,12 +91,14 @@ export const useCognitiveTraining = () => {
     setClickedButton(null)
     setFeedbackTone('default')
     setFeedbackMessage('반짝이는 순서를 잘 기억하세요!')
+    setCompletedRounds(0)
     nextLevel()
   }, [nextLevel])
 
   return {
     activeButton,
     clickedButton,
+    completedRounds,
     feedbackMessage,
     feedbackTone,
     handleButtonClick,

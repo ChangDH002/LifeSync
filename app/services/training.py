@@ -35,8 +35,10 @@ async def record_participation(
         }
     )
 
+    completion_event = req.eventType == "completed"
+
     attendance_marked = False
-    if req.attendanceCandidate:
+    if completion_event and req.attendanceCandidate:
         result = await db.attendance_logs.update_one(
             {"user_id": user_id, "date": date},
             {"$setOnInsert": {"user_id": user_id, "date": date, "marked_at": now}},
@@ -45,7 +47,7 @@ async def record_participation(
         attendance_marked = result.upserted_id is not None
 
     watering_chance_granted = False
-    if req.wateringChanceCandidate:
+    if completion_event and req.wateringChanceCandidate:
         result = await db.watering_chances.update_one(
             {"user_id": user_id, "date": date},
             {"$setOnInsert": {"user_id": user_id, "date": date, "granted_at": now}},
