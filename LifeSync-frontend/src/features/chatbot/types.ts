@@ -50,7 +50,10 @@ export interface ChatbotSendMessageResponse {
   }>
 }
 
-// ── AI 챗봇 메시지 (POST /chatbot/message) ───────────────────────
+// ── LifeSync-ai SBERT 챗봇 (POST /chatbot/messages → 8001) ───────
+// (위 ChatbotSendMessageRequest / ChatbotSendMessageResponse)
+
+// ── Gemini 챗봇 (POST /chatbot/message, 백엔드 내장) ─────────────
 
 export interface AIChatRequest {
   message: string

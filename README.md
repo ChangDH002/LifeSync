@@ -134,20 +134,63 @@ dementia/
 2. 보호 API 호출 시 `Authorization: Bearer <accessToken>` 헤더로 인증
 3. accessToken 만료 시 `POST /auth/refresh`로 재발급(회전)
 
-## 실행
+## 실행 (로컬 개발)
 
-```bash
-cd "폴더이름"
+### 사전 준비 (최초 1회)
+
+1. **MongoDB** — 로컬 `mongod`가 `127.0.0.1:27017`에서 동작해야 한다.
+2. **백엔드 환경 변수** — 루트에 `.env` 생성 (`.env.example` 복사). 챗봇은 `AI_CHATBOT_URL=http://localhost:8001` (기본값과 동일하면 생략 가능).
+3. **의존성 설치**
+
+```powershell
+cd capstone_back2
 python -m pip install -r requirements.txt
-npx --yes concurrently --names api,web --prefix-colors cyan,magenta "npx --yes wait-on tcp:127.0.0.1:27017 -t 120000 && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000" "cd /d c:..\LifeSync-frontend && npm run dev"
-'''
+cd LifeSync-ai\AI_Chatbot
+python -m pip install -r requirements.txt
+cd ..\..\LifeSync-frontend
+npm install
+cd ..
+```
 
+4. **프론트 환경 변수** (선택) — `LifeSync-frontend/.env`
 
-API 문서: `http://127.0.0.1:8000/docs`
+```
+VITE_API_URL=http://localhost:8000
+```
+
+### 매일 개발 시 (AI 챗봇 + 백엔드 + 프론트)
+
+MongoDB를 켠 뒤, **레포 루트**에서:
+
+```powershell
+npx --yes concurrently --names ai,api,web --prefix-colors yellow,cyan,magenta `
+  "cd LifeSync-ai\AI_Chatbot && python main.py" `
+  "npx --yes wait-on tcp:127.0.0.1:27017 tcp:127.0.0.1:8001 -t 180000 && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000" `
+  "cd LifeSync-frontend && npm run dev"
+```
+
+| 서비스 | URL |
+|--------|-----|
+| LifeSync-ai SBERT 챗봇 | http://127.0.0.1:8001 |
+| 백엔드 API | http://127.0.0.1:8000 |
+| 프론트 (Vite) | http://localhost:5173 |
+| API 문서 | http://127.0.0.1:8000/docs |
+
+**AI 챗봇:** 프론트 → `POST /chatbot/messages`(8000) → `LifeSync-ai/AI_Chatbot` `POST /chat`(8001). **로그인 필요.**
+
+### AI 챗봇만 따로 실행
+
+```powershell
+cd LifeSync-ai\AI_Chatbot
+python main.py
+```
+
+### 종료
+
+```powershell
+Get-Process node, python -ErrorAction SilentlyContinue | Stop-Process -Force
+```
 
 ## 의존성
 
 `requirements.txt`: `fastapi`, `uvicorn[standard]`, `motor`, `passlib[bcrypt]`, `pydantic-settings`, `email-validator`, `python-jose[cryptography]`, `httpx`
-
-# 포트 점유 프로세스 한 번에 종료
-Get-Process node, python -ErrorAction SilentlyContinue | Stop-Process -Force
