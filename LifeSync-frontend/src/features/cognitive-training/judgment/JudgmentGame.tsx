@@ -2,11 +2,11 @@ import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
 import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export function JudgmentGame() {
-  const navigate = useNavigate();
-  const { scenario, selectedIdx, handleSelect, nextScenario, isLast } = useCognitiveTraining()
+  const navigate = useNavigate()
+  const { scenario, selectedIdx, handleSelect, nextScenario, isLast, score } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
   const { reportCompletion } = useTrainingActivityReporter({
     gameCategory: 'judgment',
@@ -28,7 +28,7 @@ export function JudgmentGame() {
       </div>
 
       <section className={cn('rounded-3xl border border-gray-100 bg-white shadow-sm', isMobile ? 'p-5' : 'p-8')}>
-        <h2 className={cn('font-bold leading-snug text-gray-900', isMobile ? 'text-xl' : 'text-2xl md:text-3xl')}>
+        <h2 className={cn('font-bold leading-snug text-gray-900 whitespace-pre-line', isMobile ? 'text-xl' : 'text-2xl md:text-3xl')}>
           {scenario.question}
         </h2>
       </section>
@@ -37,15 +37,15 @@ export function JudgmentGame() {
         {scenario.options.map((option, idx) => {
           const isSelected = selectedIdx === idx
           const isCorrect = option.isCorrect
-          
+
           return (
             <button
               key={idx}
               disabled={selectedIdx !== null}
               className={`group relative flex items-center rounded-2xl border-2 text-left transition-all
-                ${selectedIdx === null 
-                  ? 'border-gray-200 bg-white hover:border-primary active:bg-gray-50' 
-                  : isSelected 
+                ${selectedIdx === null
+                  ? 'border-gray-200 bg-white hover:border-primary active:bg-gray-50'
+                  : isSelected
                     ? (isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50')
                     : 'border-gray-100 bg-gray-50 opacity-60'
                 } ${isMobile ? 'p-4' : 'p-6'}`}
@@ -55,14 +55,14 @@ export function JudgmentGame() {
               type="button"
             >
               <span className={`mr-4 flex shrink-0 items-center justify-center rounded-full font-bold
-                ${isSelected 
+                ${isSelected
                   ? (isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white')
                   : 'bg-gray-100 text-gray-500 group-hover:bg-primary group-hover:text-white'
                 } ${isMobile ? 'h-8 w-8 text-base' : 'h-10 w-10 text-xl'}`}
               >
                 {idx + 1}
               </span>
-              
+
               <span className={cn('font-semibold text-gray-800', isMobile ? 'text-lg leading-7' : 'text-xl md:text-2xl')}>
                 {option.text}
               </span>
@@ -80,36 +80,35 @@ export function JudgmentGame() {
       {selectedIdx !== null && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className={`mb-6 rounded-2xl p-6 text-center text-xl font-bold
-            ${scenario.options[selectedIdx].isCorrect 
-              ? 'bg-green-100 text-green-800' 
+            ${scenario.options[selectedIdx].isCorrect
+              ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
             }`}
           >
             {scenario.options[selectedIdx].feedback}
           </div>
-          
+
           <button
-          onClick={() => {
-            if (isLast) {
-              void reportCompletion({
-                trainingTitle: '상황 판단 퀴즈 완료',
-                scenarioId: scenario.id,
-              });
-            navigate('/training');
-              // alert("모든 문제를 완료했습니다! 홈으로 돌아갑니다.");
-            } else {
-              nextScenario();
-          }
-        }}
-        className={cn(
-          'w-full rounded-2xl font-bold text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95',
-          isLast ? 'bg-tealDark' : 'bg-primary', 
-          isMobile ? 'py-4 text-lg' : 'py-5 text-2xl'
-      )}
-      type="button"
-      >
-      {isLast ? "훈련 종료하고 돌아가기" : "다음 문제 확인하기"}
-      </button>
+            onClick={() => {
+              if (isLast) {
+                void reportCompletion({
+                  trainingTitle: '상황 판단 퀴즈 완료',
+                  scenarioId: scenario.id,
+                })
+                navigate('/training/judgmentResult', { state: { score } })
+              } else {
+                nextScenario()
+              }
+            }}
+            className={cn(
+              'w-full rounded-2xl font-bold text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95',
+              isLast ? 'bg-tealDark' : 'bg-primary',
+              isMobile ? 'py-4 text-lg' : 'py-5 text-2xl'
+            )}
+            type="button"
+          >
+            {isLast ? '훈련 종료하고 결과 확인하기' : '다음 문제 확인하기'}
+          </button>
           {isLast && (
             <div className={cn('py-4 text-center font-medium text-gray-500', isMobile ? 'text-base' : '')}>
               오늘의 판단력 훈련을 모두 마쳤습니다!
