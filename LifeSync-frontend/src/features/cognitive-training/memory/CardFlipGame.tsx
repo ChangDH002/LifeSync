@@ -1,6 +1,7 @@
 import { GameLayout } from '../ui/GameLayout'
 import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from '../memory/hooks'
+import { useNavigate } from 'react-router-dom';
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
 
@@ -24,6 +25,7 @@ export function CardFlipGame() {
   })
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0')
   const seconds = String(timeLeft % 60).padStart(2, '0')
+  const navigate = useNavigate();
 
   return (
     <GameLayout title="하루 5분 회상 퀴즈" description="똑같은 그림 카드 2장을 찾아 기억력을 천천히 깨워보세요.">
@@ -125,10 +127,13 @@ export function CardFlipGame() {
                 'rounded-2xl bg-gradient-to-r from-primary to-teal font-bold text-white shadow-md transition-transform active:scale-95',
                 isMobile ? 'px-8 py-4 text-lg' : 'px-12 py-5 text-22px'
               )}
-              onClick={resetGame}
+             onClick={() => {
+                const finalElapsedTime = 90 - timeLeft;
+                navigate('/training/MemoryResult', { state: { time: finalElapsedTime } });
+              }}
               type="button"
             >
-              한 번 더 하기
+              결과 보기
             </button>
           ) : (
             <div className={cn('w-full rounded-2xl bg-primaryPale', isMobile ? 'py-4' : 'py-6')}>

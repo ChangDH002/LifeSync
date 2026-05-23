@@ -1,11 +1,8 @@
-/**
- * 판단력 훈련(상황 선택 퀴즈) 도메인 hook
- */
 import { useState, useMemo } from "react";
 import { SCENARIOS } from "./scenarios";
 
 export const useCognitiveTraining = () => {
-    // 1. 전체 시나리오 중 랜덤으로 2개만 뽑아서 고정 (useMemo 사용)
+    // 전체 시나리오 중 랜덤으로 2개만 뽑아서 고정 (useMemo 사용)
     const randomScenarios = useMemo(() => {
         return [...SCENARIOS]
             .sort(() => Math.random() - 0.5) // 무작위 섞기
@@ -18,11 +15,17 @@ export const useCognitiveTraining = () => {
 
     const [currentIdx, setCurrentIdx] = useState(0);
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+    const [correctCount, setCorrectCount] = useState(0);
 
     // 선택지 클릭했을 때 핸들러
     const handleSelect = (idx: number) => {
         if (selectedIdx !== null) return;
         setSelectedIdx(idx);
+        const isCorrectChoice = randomScenarios[currentIdx].options[idx].isCorrect;
+        let updatedCount = correctCount;
+        if (isCorrectChoice) {
+            setCorrectCount(prev => prev + 1);
+        }
     };
 
     const nextScenario = () => {
@@ -38,6 +41,7 @@ export const useCognitiveTraining = () => {
         handleSelect,
         nextScenario,
         isLast: currentIdx === randomScenarios.length - 1,
-        totalQuestions: randomScenarios.length - 1
+        totalQuestions: randomScenarios.length,
+        score: correctCount
     };
 };

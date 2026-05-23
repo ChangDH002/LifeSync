@@ -2,8 +2,12 @@
  * 인지훈련 도메인 Hook - 집중력(순서 따라가기)
  */
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const TARGET_MAX_LEVEL = 5
 
 export const useCognitiveTraining = () => {
+  const navigate = useNavigate()
   const [sequence, setSequence] = useState<number[]>([])
   const [userSequence, setUserSequence] = useState<number[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
@@ -50,19 +54,38 @@ export const useCognitiveTraining = () => {
 
     if (id !== sequence[userSequence.length]) {
       setFeedbackTone('error')
-      setFeedbackMessage('조금 달랐어요. 처음부터 다시 시작해볼게요.')
+      setFeedbackMessage('조금 달랐어요. 결과를 확인하러 갈게요.')
 
       window.setTimeout(() => {
+        const finalScore = sequence.length - 1
+
         setSequence([])
         setUserSequence([])
         setClickedButton(null)
-        setFeedbackTone('default')
-        setFeedbackMessage('훈련 시작하기를 눌러주세요.')
-      }, 700)
+        navigate('/training/attentionResult', {
+          state: { score: finalScore },
+        })
+      }, 800)
       return
     }
 
     if (nextUserSequence.length === sequence.length) {
+      if (sequence.length === TARGET_MAX_LEVEL) {
+        setFeedbackTone('success')
+        setFeedbackMessage('🎉 대단하십니다! 모든 단계를 완벽하게 성공하셨습니다!')
+
+        window.setTimeout(() => {
+          setSequence([])
+          setUserSequence([])
+          setClickedButton(null)
+          
+          navigate('/training/attentionResult', {
+            state: { score: TARGET_MAX_LEVEL }, // 만점 토스
+          })
+        }, 1000)
+        return
+      }
+
       setFeedbackTone('success')
       setFeedbackMessage('좋아요! 정확했어요. 다음 단계로 넘어갑니다.')
 

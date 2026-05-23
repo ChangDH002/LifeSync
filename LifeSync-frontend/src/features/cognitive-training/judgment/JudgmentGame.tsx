@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 export function JudgmentGame() {
   const navigate = useNavigate();
-  const { scenario, selectedIdx, handleSelect, nextScenario, isLast } = useCognitiveTraining()
+  const { scenario, selectedIdx, handleSelect, nextScenario, isLast, score } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
   const { reportParticipation } = useTrainingActivityReporter({
     gameCategory: 'judgment',
@@ -28,7 +28,7 @@ export function JudgmentGame() {
       </div>
 
       <section className={cn('rounded-3xl border border-gray-100 bg-white shadow-sm', isMobile ? 'p-5' : 'p-8')}>
-        <h2 className={cn('font-bold leading-snug text-gray-900', isMobile ? 'text-xl' : 'text-2xl md:text-3xl')}>
+        <h2 className={cn('font-bold leading-snug text-gray-900 whitespace-pre-line', isMobile ? 'text-xl' : 'text-2xl md:text-3xl')}>
           {scenario.question}
         </h2>
       </section>
@@ -99,7 +99,7 @@ export function JudgmentGame() {
               trainingTitle: '상황 판단 퀴즈 완료',
               scenarioId: scenario.id,
             });
-            navigate('/training');
+            navigate('/training/judgmentResult', {state: { score: score }});
               // alert("모든 문제를 완료했습니다! 홈으로 돌아갑니다.");
             } else {
               nextScenario();
@@ -112,7 +112,7 @@ export function JudgmentGame() {
       )}
       type="button"
       >
-      {isLast ? "훈련 종료하고 돌아가기" : "다음 문제 확인하기"}
+      {isLast ? "훈련 종료하고 결과 확인하기" : "다음 문제 확인하기"}
       </button>
           {isLast && (
             <div className={cn('py-4 text-center font-medium text-gray-500', isMobile ? 'text-base' : '')}>

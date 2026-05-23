@@ -8,9 +8,13 @@ import {
   InformationPage,
   JudgmentGamePage,
   LanguageGamePage,
+  LanguageGameResultPage,
+  JudgmentGameResultPage,
+  AttentionGameResultPage,
   LoginPage,
   MedicalNoticePage,
   MemoryGamePage,
+  MemoryGameResultPage,
   MypagePage,
   NotFoundPage,
   PrivacyPolicyPage,
@@ -94,10 +98,26 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: ROUTE_PATHS.trainingMemoryResult,
+    element: (
+      <RequireAuth>
+        <MemoryGameResultPage />
+      </RequireAuth>
+    ),
+  },
+  {
     path: ROUTE_PATHS.trainingJudgment,
     element: (
       <RequireAuth>
         <JudgmentGamePage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.trainingJudgmentResult,
+    element: (
+      <RequireAuth>
+        <JudgmentGameResultPage />
       </RequireAuth>
     ),
   },
@@ -110,10 +130,26 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: ROUTE_PATHS.trainingAttentionResult,
+    element: (
+      <RequireAuth>
+        <AttentionGameResultPage />
+      </RequireAuth>
+    ),
+  },
+  {
     path: ROUTE_PATHS.trainingLanguage,
     element: (
       <RequireAuth>
         <LanguageGamePage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.trainingLanguageResult,
+    element: (
+      <RequireAuth>
+        <LanguageGameResultPage />
       </RequireAuth>
     ),
   },

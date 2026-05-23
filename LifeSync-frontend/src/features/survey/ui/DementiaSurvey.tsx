@@ -237,7 +237,9 @@ function SurveyResultView({
       <p className="text-[22px] text-contentMid leading-[1.8] mb-10 whitespace-pre-line text-center">
         {result.desc}
         {"\n\n"}
-        <span className="text-[18px] text-contentLight opacity-80">※ 본 결과는 의료 진단이 아닌 생활습관 분석용입니다.</span>
+        <span className="text-[18px] text-contentLight opacity-80">※ 본 결과는 의료 진단이 아닌 생활습관 분석용입니다.
+          본 설문조사는 CogDrisk와 ANU-ADRI를 기반으로 하여 만들어졌습니다.
+        </span>
       </p>
       {saveStatusMessage ? (
         <p
