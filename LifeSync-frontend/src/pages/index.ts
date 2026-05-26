@@ -18,3 +18,7 @@ export * from './training/LanguageGamePage'
 export * from './training/MemoryGamePage'
 export * from './training/TrainingPage'
 export * from './survey/SurveyPage';
+export * from './training/AttentionGameResultPage';
+export * from './training/JudgmentGameResultPage';
+export * from './training/LanguageGameResultPage';
+export * from './training/MemoryGameResultPage';
