@@ -15,6 +15,17 @@ def get_db() -> AsyncIOMotorDatabase:
     return get_client()[settings.database_name]
 
 
+async def seed_routine_definitions(db: AsyncIOMotorDatabase) -> None:
+    from app.services.routines import ROUTINE_DEFINITION_CATALOG
+
+    for definition in ROUTINE_DEFINITION_CATALOG:
+        await db.routine_definitions.update_one(
+            {"routine_id": definition.routine_id},
+            {"$set": definition.model_dump()},
+            upsert=True,
+        )
+
+
 async def connect_db() -> None:
     global _client
     _client = AsyncIOMotorClient(
@@ -34,6 +45,12 @@ async def connect_db() -> None:
     await db.routine_completions.create_index(
         [("user_id", 1), ("routine_id", 1), ("date", 1)], unique=True
     )
+    await db.routine_definitions.create_index("routine_id", unique=True)
+    await db.routine_definitions.create_index("active")
+    await seed_routine_definitions(db)
+    await db.user_routines.create_index([("user_id", 1), ("active", 1), ("priority", 1)])
+    await db.user_routines.create_index([("user_id", 1), ("routine_id", 1), ("active", 1)])
+    await db.user_routines.create_index([("user_id", 1), ("source_survey_submitted_at", -1)])
     await db.chat_sessions.create_index("session_id", unique=True)
     await db.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
     await db.survey_results.create_index([("user_id", 1), ("survey_type", 1), ("submitted_at", -1)])

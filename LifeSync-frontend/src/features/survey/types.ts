@@ -30,6 +30,8 @@ export type DementiaSurveyResponseMap = Record<string, string | number | boolean
 
 export interface DementiaSurveySubmitRequest {
   surveyType: 'dementia-risk'
+  surveyVersion?: string
+  clientVersion?: string
   totalScore?: number
   riskLevel?: string
   categoryScores?: Record<string, number>
@@ -45,9 +47,13 @@ export interface ToolScoreBreakdown {
 export interface DementiaSurveySubmitResponse {
   surveyId: string
   surveyType: string
+  surveyVersion: string
+  scoringVersion: string
   totalScore?: number
   riskLevel?: string
   finalRiskScore?: number
+  categoryScores: Record<string, number>
+  responseCount: number
   cogdrisk?: ToolScoreBreakdown
   anuAdri?: ToolScoreBreakdown
   submittedAt: string

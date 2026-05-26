@@ -48,62 +48,6 @@ function buildSurveyResponseMap(responses: SurveyResponse[]) {
   }, {});
 }
 
-const FACTOR_CATEGORY_MAP: Record<string, '인구통계' | '심혈관·대사' | '심리·신경' | '생활습관'> = {
-  age: '인구통계',
-  education_level: '인구통계',
-  bmi: '심혈관·대사',
-  high_cholesterol: '심혈관·대사',
-  has_diabetes: '심혈관·대사',
-  has_stroke: '심혈관·대사',
-  has_hypertension: '심혈관·대사',
-  has_atrial_fib: '심혈관·대사',
-  depression: '심리·신경',
-  has_tbi: '심리·신경',
-  loneliness: '심리·신경',
-  social_engagement: '심리·신경',
-  insomnia: '심리·신경',
-  cognitive_activity: '생활습관',
-  physical_activity: '생활습관',
-  fish_intake: '생활습관',
-  smoking_status: '생활습관',
-  pesticide_exposure: '생활습관',
-  alcohol_intake: '생활습관',
-}
-
-function buildServerCategoryScores(serverResult: DementiaSurveySubmitResponse | null) {
-  if (!serverResult?.cogdrisk || !serverResult?.anuAdri) {
-    return null;
-  }
-
-  const summedFactors: Record<string, number> = {};
-
-  for (const [factor, score] of Object.entries(serverResult.cogdrisk.matchedFactors)) {
-    summedFactors[factor] = (summedFactors[factor] || 0) + score;
-  }
-
-  for (const [factor, score] of Object.entries(serverResult.anuAdri.matchedFactors)) {
-    summedFactors[factor] = (summedFactors[factor] || 0) + score;
-  }
-
-  const categoryScores: Record<string, number> = {
-    '인구통계': 0,
-    '심혈관·대사': 0,
-    '심리·신경': 0,
-    '생활습관': 0,
-  }
-
-  for (const [factor, score] of Object.entries(summedFactors)) {
-    const category = FACTOR_CATEGORY_MAP[factor]
-    if (category) {
-      categoryScores[category] += score
-    }
-  }
-
-  return Object.fromEntries(
-    Object.entries(categoryScores).map(([category, score]) => [category, Number(score.toFixed(1))]),
-  )
-}
-
 const SURVEY_DATA: SurveyQuestion[] = [
   {
     id: 'age',
@@ -415,7 +359,7 @@ function SurveyResultView({
   const finalScore = serverResult?.finalRiskScore;
   const result = getResult(finalScore, serverResult?.riskLevel);
   const displayedScore = finalScore ?? yesCount;
-  const displayedCategoryScores = buildServerCategoryScores(serverResult) ?? categoryScores;
+  const displayedCategoryScores = serverResult?.categoryScores ?? categoryScores;
 
   useEffect(() => {
     let cancelled = false;
@@ -436,6 +380,8 @@ function SurveyResultView({
       try {
         const saved = await surveyApi.saveDementiaRiskResult({
           surveyType: 'dementia-risk',
+          surveyVersion: 'dementia-risk-v1',
+          clientVersion: import.meta.env.VITE_APP_VERSION || 'local-dev',
           totalScore: yesCount,
           riskLevel: result.status,
           categoryScores,

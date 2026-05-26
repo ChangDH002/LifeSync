@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.jwt import decode_access_token
-from app.schemas.routines import TodayRoutinesResponse
+from app.schemas.routines import (
+    RoutineCompletionActionResponse,
+    RoutineWeeklyHistoryResponse,
+    TodayRoutinesResponse,
+)
 from app.services import routines as routines_service
 
 router = APIRouter()
@@ -31,3 +35,32 @@ async def get_today_routines(
     user_id: str = Depends(get_current_user_id),
 ) -> TodayRoutinesResponse:
     return await routines_service.get_today_routines(user_id)
+
+
+@router.get("/weekly", response_model=RoutineWeeklyHistoryResponse)
+async def get_weekly_routine_history(
+    user_id: str = Depends(get_current_user_id),
+) -> RoutineWeeklyHistoryResponse:
+    return await routines_service.get_weekly_routine_history(user_id)
+
+
+@router.post(
+    "/{routine_id}/complete",
+    response_model=RoutineCompletionActionResponse,
+)
+async def complete_routine(
+    routine_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> RoutineCompletionActionResponse:
+    return await routines_service.complete_routine(user_id, routine_id)
+
+
+@router.delete(
+    "/{routine_id}/complete",
+    response_model=RoutineCompletionActionResponse,
+)
+async def cancel_routine_completion(
+    routine_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> RoutineCompletionActionResponse:
+    return await routines_service.cancel_routine_completion(user_id, routine_id)
