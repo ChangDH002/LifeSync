@@ -16,12 +16,12 @@ export function AppFooter() {
             LifeSync
           </div>
           <p className="text-sm leading-7 text-white/65">
-            사용자의 생활습관, 인지활동, 기분 상태, 설문 결과를 바탕으로 치매 예방 및
-            관리에 도움이 되는 맞춤형 정보와 활동을 제공하는 서비스입니다.
+            사용자의 생활 습관, 기억 변화, 감정 상태, 설문 결과를 바탕으로 흐트러진
+            하루의 리듬과 삶의 싱크를 다시 맞추도록 돕는 라이프 케어 서비스입니다.
           </p>
           <p className="mt-3 text-sm leading-7 text-white/50">
-            챗봇, 추천 루틴, 인지훈련 기능을 통해 예방 중심의 건강관리 환경 구축을
-            목표로 합니다.
+            챗봇, 추천 루틴, 인지훈련을 통해 나에게 맞는 생활 흐름을 천천히 되찾는 경험을
+            만드는 것을 목표로 합니다.
           </p>
         </div>
         <div>
@@ -56,12 +56,12 @@ export function AppFooter() {
         </div>
       </div>
       <div className="mx-auto mt-8 flex w-full max-w-6xl flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/40 md:flex-row md:items-center md:justify-between">
-        <span>© 2025 LifeSync. AI 기반 치매 예방 및 관리 지원 웹 서비스</span>
+        <span>© 2025 LifeSync. 삶과 기억의 싱크를 맞춰주는 라이프 케어 서비스</span>
         <span>문의: support@lifesync.kr</span>
       </div>
       <div className="mx-auto mt-3 w-full max-w-6xl text-xs leading-6 text-white/35">
-        본 서비스는 의료적 진단 서비스가 아니며 예방 및 관리 지원을 목적으로 합니다.
-        건강 관련 응답은 정보 제공 수준으로 제한되며, 위험 신호가 의심되는 경우 전문가
+        본 서비스는 의료적 진단 서비스가 아니며, 생활 리듬 관리와 정보 제공을 목적으로
+        합니다. 건강 관련 응답은 참고용으로 제공되며, 위험 신호가 의심되는 경우 전문가
         상담을 권고합니다.
       </div>
     </footer>

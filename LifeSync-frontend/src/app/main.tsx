@@ -30,7 +30,7 @@ function setupDocumentHead() {
     descriptionMeta.setAttribute('name', 'description')
     document.head.appendChild(descriptionMeta)
   }
-  descriptionMeta.setAttribute('content', 'LifeSync - 시니어 건강 관리 플랫폼')
+  descriptionMeta.setAttribute('content', 'LifeSync - 삶의 리듬과 기억의 싱크를 맞춰주는 라이프 케어 서비스')
 
   ensureLinkTag({ rel: 'preconnect', href: 'https://fonts.googleapis.com' })
   ensureLinkTag({ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' })

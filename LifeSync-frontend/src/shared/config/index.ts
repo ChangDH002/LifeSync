@@ -5,7 +5,7 @@
 export const APP_CONFIG = {
   name: 'LifeSync',
   version: '0.0.1',
-  description: 'AI 기반 치매 예방 및 관리 지원 웹 서비스',
+  description: '삶과 기억의 싱크를 맞춰주는 라이프 케어 서비스',
 } as const
 
 export const ROUTE_PATHS = {

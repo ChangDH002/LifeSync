@@ -13,20 +13,20 @@ import { SectionCard } from '@/shared/ui'
 const primaryFeatureCards: HomeFeatureCard[] = [
   {
     icon: ClipboardList,
-    title: '생활습관 설문',
-    body: '수면, 식습관, 운동, 인지활동 등 생활습관을 분석하여 맞춤형 위험도를 파악합니다.',
+    title: '라이프 싱크 체크',
+    body: '수면, 활동, 감정, 기억 습관을 함께 살펴보며 지금 내 일상 리듬이 어디에서 어긋나 있는지 확인합니다.',
     to: '/login',
   },
   {
     icon: MessageCircle,
-    title: 'AI 챗봇 상담',
-    body: '언제든지 AI 상담사와 대화하며 치매 예방에 관한 조언과 정서적 지지를 받을 수 있습니다.',
+    title: 'AI 싱크 코치',
+    body: '하루가 흐트러졌다고 느껴질 때, 다음에 무엇을 하면 좋을지 차분하게 정리해주는 대화형 도우미입니다.',
     to: '/chatbot',
   },
   {
     icon: Leaf,
     title: '맞춤 루틴 추천',
-    body: '설문 결과를 바탕으로 수면, 식단, 운동 등 일상 루틴을 추천하고 실천을 도와드립니다.',
+    body: '지금 내 생활 패턴에 맞는 수면, 식사, 운동 루틴을 제안해 일상의 싱크를 조금씩 회복하도록 돕습니다.',
     to: '/routine',
   },
 ] as const
@@ -35,19 +35,19 @@ const secondaryFeatureCards: HomeFeatureCard[] = [
   {
     icon: Gamepad2,
     title: '인지훈련 게임',
-    body: '기억력 카드, 숫자 기억하기 등 다양한 인지훈련 게임으로 뇌를 활성화하세요.',
+    body: '기억력과 집중력을 깨우는 짧은 훈련으로 하루의 감각과 사고 흐름을 다시 정돈해보세요.',
     to: '/training',
   },
   {
     icon: Brain,
-    title: '인지 건강 정보',
-    body: '인지 건강 관리, 생활 습관, 예방 방법 등을 알기 쉬운 안내로 제공합니다.',
+    title: '라이프 가이드',
+    body: '기억, 수면, 대화, 활동 습관을 생활 언어로 풀어내어 바로 이해하고 적용할 수 있게 정리합니다.',
     to: '/information',
   },
   {
     icon: Activity,
     title: '활동 기록 관리',
-    body: '루틴 수행 기록, 인지훈련 결과 등을 한눈에 확인하고 건강 변화를 추적하세요.',
+    body: '루틴, 설문, 훈련 기록을 한 곳에 모아 내가 얼마나 다시 싱크를 찾아가고 있는지 살펴볼 수 있습니다.',
     to: '/mypage',
   },
 ] as const
@@ -60,7 +60,7 @@ export function HomeFeatureGridSection() {
       <div className="mx-auto max-w-[820px] text-center">
         <h2 className="section-title md:text-[64px]">주요 기능</h2>
         <p className="section-subtitle mt-5 text-lg md:text-[22px]">
-          인지 건강 관리를 위한 기능을 한 곳에서 이용하세요
+          삶의 리듬과 기억의 싱크를 다시 맞추는 기능을 한 곳에 모았습니다
         </p>
       </div>
       <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:auto-rows-fr">

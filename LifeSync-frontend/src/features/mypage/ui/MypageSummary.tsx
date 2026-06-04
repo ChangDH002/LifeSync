@@ -45,8 +45,8 @@ const summaryCardDefinitions = [
 
 const quickActions = [
   {
-    title: 'AI 챗봇 상담',
-    subtitle: '무엇이든 물어보세요',
+    title: 'AI 싱크 코치',
+    subtitle: '오늘의 흐름을 함께 정리해보세요',
     to: '/chatbot',
     icon: MessageCircle,
     surfaceClassName: 'bg-surface',
@@ -146,7 +146,7 @@ export function MypageSummary() {
           마이페이지
         </h1>
         <p className="mt-4 text-xl leading-9 text-contentMid">
-          대시보드와 개인 활동 기록을 이곳에서 함께 확인할 수 있습니다.
+          내 삶의 싱크가 어떻게 회복되고 있는지 활동 기록과 함께 확인할 수 있습니다.
         </p>
         {isLoading ? <p className="mt-3 text-base text-contentLight">마이페이지 데이터를 불러오는 중입니다.</p> : null}
         {!isLoading && (isFallback || error) ? (
@@ -166,7 +166,7 @@ export function MypageSummary() {
                   안녕하세요, {mypageSummary.user.name}님!
                 </h2>
                 <p className="mt-2 text-lg leading-8 text-contentMid">
-                  오늘도 건강한 하루를 시작해볼까요?
+                  오늘의 리듬을 다시 맞추는 하루를 시작해볼까요?
                 </p>
               </div>
             </div>

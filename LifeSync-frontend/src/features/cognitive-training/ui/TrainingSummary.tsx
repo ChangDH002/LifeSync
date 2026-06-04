@@ -17,7 +17,7 @@ export function TrainingSummary() {
     <SectionCard className="w-full bg-surface shadow-soft border-border">
       <div className="section-badge text-18px">인지 훈련</div>
       <h2 className="text-28px font-extrabold text-tealDark mt-4 leading-tight">
-        인지 훈련을 한 화면에서 이어갑니다.
+        흐트러진 감각과 기억의 싱크를 훈련으로 다시 맞춥니다.
       </h2>
       {/* <ul className="mt-5 space-y-3 text-base leading-8 text-contentMid"> */}
       <ul className="mt-8 space-y-5">
@@ -38,7 +38,7 @@ export function TrainingSummary() {
       </ul>
 
       <p className="mt-8 text-18px text-contentMid text-center leading-[1.7]">
-        "매일 10분 투자가 당신의 기억력을 지킵니다!"
+        "짧은 훈련이 하루의 감각과 기억 리듬을 다시 정돈합니다."
       </p>
     </SectionCard>
   )

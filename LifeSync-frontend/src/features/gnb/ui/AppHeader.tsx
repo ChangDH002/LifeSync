@@ -21,11 +21,11 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 border-b border-border bg-base/95 shadow-[0_2px_16px_rgba(44,110,107,0.07)] backdrop-blur-xl">
       <div className="page-shell flex flex-col gap-5 py-5 lg:grid lg:grid-cols-[minmax(280px,360px)_1fr_auto] lg:items-center lg:gap-6">
         <div className="min-w-0">
-          <NavLink className="flex items-center gap-3 font-serif text-[31px] font-black tracking-[-0.03em] text-tealDark" to="/">
-            <LogoMark className="h-12 w-12" iconClassName="h-[22px] w-[22px]" />
+          <NavLink className="flex min-w-0 items-center gap-3 font-serif text-[24px] font-black tracking-[-0.03em] text-tealDark sm:text-[28px] lg:text-[31px]" to="/">
+            <LogoMark className="h-10 w-10 shrink-0 sm:h-11 sm:w-11 lg:h-12 lg:w-12" iconClassName="h-5 w-5 sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]" />
             {appName}
           </NavLink>
-          <p className="mt-2 max-w-[420px] text-[17px] font-medium leading-7 text-contentMid lg:leading-6">
+          <p className="mt-2 max-w-[420px] break-keep text-[14px] font-medium leading-6 text-contentMid sm:text-[15px] lg:text-[16px] lg:leading-6">
             {description}
           </p>
         </div>
