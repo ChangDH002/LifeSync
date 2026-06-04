@@ -2,7 +2,7 @@ services:
   - type: web
     name: lifesync-api
     runtime: python
-    rootDir: .
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
@@ -11,7 +11,7 @@ services:
   - type: web
     name: lifesync-ai
     runtime: python
-    rootDir: LifeSync-ai/AI_Chatbot
+    rootDir: ai/AI_Chatbot
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health

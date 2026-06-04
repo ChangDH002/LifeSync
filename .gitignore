@@ -1,9 +1,14 @@
 # Secrets — copy from .env.example and fill locally; never commit
+# (.env.example / .env.production.example 같은 예시 파일은 추적 대상)
 .env
 .env.local
 .env.*.local
 .env.production
 .env.development
+
+# Node / Frontend
+node_modules/
+.vite/
 
 # Python
 __pycache__/
