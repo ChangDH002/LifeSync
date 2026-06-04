@@ -10,6 +10,7 @@ from app.routers import auth
 from app.routers import avatar
 from app.routers import chatbot
 from app.routers import mypage
+from app.routers import risk_assessment
 from app.routers import routines
 from app.routers import social_auth
 from app.routers import survey
@@ -44,6 +45,11 @@ app.include_router(survey.router, prefix="/survey", tags=["survey"])
 app.include_router(avatar.router, prefix="/avatar", tags=["avatar"])
 app.include_router(mypage.router, prefix="/mypage", tags=["mypage"])
 app.include_router(routines.router, prefix="/routines", tags=["routines"])
+app.include_router(
+    risk_assessment.router,
+    prefix="/risk-assessment",
+    tags=["risk_assessment"],
+)
 
 
 @app.get("/health")
