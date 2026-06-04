@@ -19,6 +19,7 @@ interface LanguageResultProps {
 
 export default function LanguageResult({ score, total = 5, onRetry }: LanguageResultProps) {
   const navigate = useNavigate();
+  void onRetry;
   const isPassed = score >= 3;
 
   return (

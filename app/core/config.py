@@ -8,8 +8,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    app_env: str = "development"
     mongodb_url: str = "mongodb://localhost:27017"
     database_name: str = "dementia_app"
+    require_db_on_startup: bool = False
     secret_key: str = "change-me-in-production"
     cors_origins: str = (
         "http://localhost:5173,"
@@ -40,6 +42,10 @@ class Settings(BaseSettings):
     social_state_secret: str = "change-me-in-production"
     social_state_expires_minutes: int = 10
     social_redirect_allowlist: str = ""
+    enable_dev_seed_user: bool = False
+    dev_seed_email: str | None = None
+    dev_seed_password: str | None = None
+    dev_seed_name: str = "개발용 테스트 사용자"
 
     @property
     def social_redirect_allowlist_list(self) -> list[str]:

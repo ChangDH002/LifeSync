@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.db import close_db, connect_db
+from app.db import close_db, connect_db, get_db_status, is_db_connected
 from app.routers import ai
 from app.routers import auth
 from app.routers import avatar
@@ -20,8 +20,10 @@ from app.routers import training
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
-    from app.services.users import seed_dev_user
-    await seed_dev_user()
+    if is_db_connected():
+        from app.services.users import seed_dev_user
+
+        await seed_dev_user()
     yield
     await close_db()
 
@@ -54,4 +56,4 @@ app.include_router(
 
 @app.get("/health")
 async def health():
-    return {"ok": True}
+    return {"ok": True, "database": get_db_status()}

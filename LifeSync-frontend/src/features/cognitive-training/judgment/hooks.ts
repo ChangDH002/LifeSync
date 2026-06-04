@@ -22,7 +22,6 @@ export const useCognitiveTraining = () => {
         if (selectedIdx !== null) return;
         setSelectedIdx(idx);
         const isCorrectChoice = randomScenarios[currentIdx].options[idx].isCorrect;
-        let updatedCount = correctCount;
         if (isCorrectChoice) {
             setCorrectCount(prev => prev + 1);
         }
