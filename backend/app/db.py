@@ -1,8 +1,13 @@
+import logging
+
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import settings
 
 _client: AsyncIOMotorClient | None = None
+_db_connected = False
+_last_db_error: str | None = None
+logger = logging.getLogger(__name__)
 
 
 def get_client() -> AsyncIOMotorClient:
@@ -15,32 +20,75 @@ def get_db() -> AsyncIOMotorDatabase:
     return get_client()[settings.database_name]
 
 
+async def seed_routine_definitions(db: AsyncIOMotorDatabase) -> None:
+    from app.services.routines import ROUTINE_DEFINITION_CATALOG
+
+    for definition in ROUTINE_DEFINITION_CATALOG:
+        await db.routine_definitions.update_one(
+            {"routine_id": definition.routine_id},
+            {"$set": definition.model_dump()},
+            upsert=True,
+        )
+
+
 async def connect_db() -> None:
-    global _client
-    _client = AsyncIOMotorClient(
+    global _client, _db_connected, _last_db_error
+    client = AsyncIOMotorClient(
         settings.mongodb_url,
         serverSelectionTimeoutMS=5000,
     )
-    await _client.admin.command("ping")
-    db = get_db()
-    await db.users.create_index("email", unique=True)
-    await db.users.create_index([("providers.provider", 1), ("providers.provider_user_id", 1)])
-    await db.refresh_tokens.create_index([("user_id", 1), ("jti_hash", 1)], unique=True)
-    await db.refresh_tokens.create_index("expires_at")
-    await db.attendance_logs.create_index([("user_id", 1), ("date", 1)], unique=True)
-    await db.watering_chances.create_index([("user_id", 1), ("date", 1)], unique=True)
-    await db.training_events.create_index([("user_id", 1), ("occurred_at", -1)])
-    await db.avatars.create_index("user_id", unique=True)
-    await db.routine_completions.create_index(
-        [("user_id", 1), ("routine_id", 1), ("date", 1)], unique=True
-    )
-    await db.chat_sessions.create_index("session_id", unique=True)
-    await db.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
-    await db.survey_results.create_index([("user_id", 1), ("survey_type", 1), ("submitted_at", -1)])
+    try:
+        await client.admin.command("ping")
+        _client = client
+        _db_connected = True
+        _last_db_error = None
+        db = get_db()
+        await db.users.create_index("email", unique=True)
+        await db.users.create_index([("providers.provider", 1), ("providers.provider_user_id", 1)])
+        await db.refresh_tokens.create_index([("user_id", 1), ("jti_hash", 1)], unique=True)
+        await db.refresh_tokens.create_index("expires_at")
+        await db.attendance_logs.create_index([("user_id", 1), ("date", 1)], unique=True)
+        await db.watering_chances.create_index([("user_id", 1), ("date", 1)], unique=True)
+        await db.training_events.create_index([("user_id", 1), ("occurred_at", -1)])
+        await db.avatars.create_index("user_id", unique=True)
+        await db.routine_completions.create_index(
+            [("user_id", 1), ("routine_id", 1), ("date", 1)], unique=True
+        )
+        await db.routine_definitions.create_index("routine_id", unique=True)
+        await db.routine_definitions.create_index("active")
+        await seed_routine_definitions(db)
+        await db.user_routines.create_index([("user_id", 1), ("active", 1), ("priority", 1)])
+        await db.user_routines.create_index([("user_id", 1), ("routine_id", 1), ("active", 1)])
+        await db.user_routines.create_index([("user_id", 1), ("source_survey_submitted_at", -1)])
+        await db.risk_assessments.create_index([("user_id", 1), ("assessment_type", 1), ("model", 1)])
+        await db.risk_assessments.create_index([("user_id", 1), ("created_at", -1)])
+        await db.chat_sessions.create_index("session_id", unique=True)
+        await db.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
+        await db.survey_results.create_index([("user_id", 1), ("survey_type", 1), ("submitted_at", -1)])
+    except Exception as exc:
+        _client = None
+        _db_connected = False
+        _last_db_error = str(exc)
+        client.close()
+        logger.warning("Database connection failed during startup: %s", exc)
+        if settings.require_db_on_startup:
+            raise
 
 
 async def close_db() -> None:
-    global _client
+    global _client, _db_connected
     if _client is not None:
         _client.close()
         _client = None
+    _db_connected = False
+
+
+def is_db_connected() -> bool:
+    return _db_connected
+
+
+def get_db_status() -> dict[str, str | bool | None]:
+    return {
+        "connected": _db_connected,
+        "last_error": _last_db_error,
+    }

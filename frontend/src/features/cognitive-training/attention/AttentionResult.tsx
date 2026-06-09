@@ -19,6 +19,7 @@ interface AttentionResultProps {
 
 export default function AttentionResult({ score, total = 5, onRetry }: AttentionResultProps) {
   const navigate = useNavigate();
+  void onRetry;
   const isPassed = score >= 3;
 
   return (

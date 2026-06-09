@@ -67,10 +67,11 @@ export function ChatbotWorkspace() {
               <div>
                 <div className="section-badge">AI Chatbot</div>
                 <h1 className="mt-4 text-3xl font-extrabold tracking-[-0.03em] text-tealDark md:text-[38px]">
-                  인지 건강 AI 상담
+                  LifeSync AI 코치
                 </h1>
                 <p className="mt-3 max-w-2xl text-base leading-8 text-contentMid md:text-lg">
-                  생활 습관, 인지 건강 정보, 루틴 실천 방법을 차분하게 정리해드립니다.
+                  생활 습관, 기억 변화, 루틴 실천 방법을 함께 살피며 하루의 싱크를 다시 맞출
+                  수 있도록 차분하게 정리해드립니다.
                 </p>
               </div>
 
@@ -129,7 +130,7 @@ export function ChatbotWorkspace() {
 
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm leading-7 text-contentMid">
-                    의료 진단을 대신하지 않으며, 위험 신호가 있으면 반드시 전문의 상담이 필요합니다.
+                    의료 진단을 대신하지 않으며, 이상 신호가 지속되면 반드시 전문의 상담이 필요합니다.
                   </p>
                   <Button className="min-h-[56px] rounded-[22px] px-6" disabled={!canSend} type="submit">
                     <SendHorizonal className="mr-2 h-5 w-5" />
@@ -207,13 +208,13 @@ export function ChatbotWorkspace() {
               <div>
                 <p className="text-sm font-semibold tracking-[0.1em] text-primary">안내</p>
                 <h2 className="mt-1 text-xl font-bold tracking-[-0.02em] text-tealDark">
-                  AI 상담 이용 안내
+                  AI 코치 이용 안내
                 </h2>
               </div>
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-7 text-contentMid">
               <li>· 의료 진단을 대신하지 않습니다.</li>
-              <li>· 위험 신호가 있으면 전문의 상담이 필요합니다.</li>
+              <li>· 일상과 기억의 흐름을 정리하는 참고용 안내를 제공합니다.</li>
               <li>· 대화 내용은 자동으로 저장됩니다.</li>
             </ul>
           </SectionCard>

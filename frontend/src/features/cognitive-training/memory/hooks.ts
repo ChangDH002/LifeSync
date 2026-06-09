@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 interface Card {
   id: number
@@ -23,11 +22,7 @@ export const useCognitiveTraining = () => {
   const [feedback, setFeedback] = useState<CardFeedback>({ cardIds: [], type: null })
   const [isPreviewing, setIsPreviewing] = useState(true)
   const [previewSecondsLeft, setPreviewSecondsLeft] = useState(PREVIEW_DURATION)
-  const [clearTimeLeft, setClearTimeLeft] = useState(0)
-  const [finalTime, setFinalTime] = useState(0)
   const isTimeOver = timeLeft === 0 && !isGameOver
-  const navigate = useNavigate()
-  const TOTAL_GAME_TIME = 90;
 
   const initGame = useCallback(() => {
     const emojis = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍒']
@@ -47,8 +42,6 @@ export const useCognitiveTraining = () => {
     setFeedback({ cardIds: [], type: null })
     setIsPreviewing(true)
     setPreviewSecondsLeft(PREVIEW_DURATION)
-    setFinalTime(0)
-    setClearTimeLeft(0)
   }, [])
 
   useEffect(() => {
@@ -166,8 +159,6 @@ export const useCognitiveTraining = () => {
 
     return () => window.clearInterval(timer)
   }, [cards.length, isGameOver, isPreviewing, isTimeOver])
-
-  const elapsedTime = TOTAL_GAME_TIME - timeLeft// 버그 : 걸린 시간이 0초로 고정
 
   return {
     cards,

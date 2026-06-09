@@ -11,28 +11,36 @@ from app.db import get_db
 
 logger = logging.getLogger(__name__)
 
-# ── 개발용 테스트 계정 (서버 최초 기동 시 자동 생성/갱신) ──────────
-_DEV_SEED_EMAIL = "qwe123@naver.com"
-_DEV_SEED_PASSWORD = "qwe12345"
-_DEV_SEED_NAME = "홍길동"
-
 
 async def seed_dev_user() -> None:
-    """서버 시작 시 개발용 테스트 계정을 생성하거나 비밀번호를 최신 값으로 갱신합니다."""
+    """옵션이 켜진 경우에만 개발용 테스트 계정을 생성하거나 갱신합니다."""
+    from app.core.config import settings
+
+    if not settings.enable_dev_seed_user:
+        return
+
+    if not settings.dev_seed_email or not settings.dev_seed_password:
+        logger.warning("ENABLE_DEV_SEED_USER=true 이지만 DEV_SEED_EMAIL/DEV_SEED_PASSWORD가 비어 있습니다.")
+        return
+
     try:
-        existing = await get_db().users.find_one({"email": _DEV_SEED_EMAIL})
+        existing = await get_db().users.find_one({"email": settings.dev_seed_email})
         if existing is None:
-            await create_user(_DEV_SEED_EMAIL, _DEV_SEED_PASSWORD, name=_DEV_SEED_NAME)
-            logger.info("개발용 테스트 계정 생성 완료: %s", _DEV_SEED_EMAIL)
+            await create_user(
+                settings.dev_seed_email,
+                settings.dev_seed_password,
+                name=settings.dev_seed_name,
+            )
+            logger.info("개발용 테스트 계정 생성 완료: %s", settings.dev_seed_email)
         else:
             await get_db().users.update_one(
-                {"email": _DEV_SEED_EMAIL},
+                {"email": settings.dev_seed_email},
                 {"$set": {
-                    "password_hash": hash_password(_DEV_SEED_PASSWORD),
+                    "password_hash": hash_password(settings.dev_seed_password),
                     "updated_at": datetime.now(timezone.utc),
                 }},
             )
-            logger.info("개발용 테스트 계정 비밀번호 갱신 완료: %s", _DEV_SEED_EMAIL)
+            logger.info("개발용 테스트 계정 비밀번호 갱신 완료: %s", settings.dev_seed_email)
     except Exception as e:
         logger.warning("개발용 테스트 계정 처리 실패 (무시): %s", e)
 

@@ -16,7 +16,6 @@ export function CardFlipGame() {
     isPreviewing,
     isTimeOver,
     previewSecondsLeft,
-    resetGame,
     timeLeft,
   } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()

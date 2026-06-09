@@ -10,10 +10,10 @@ export const SurveyPage = () => {
       <div className="max-w-[800px] mx-auto">
         <header className="text-center mb-12 animate-fadeIn">
           <h1 className="text-[40px] font-bold text-tealDark mb-3">
-            인지 건강 자가진단
+            LifeSync 생활 리듬 체크
           </h1>
           <p className="text-[24px] text-contentMid break-keep leading-relaxed">
-            최근 기억력이나 일상생활에서 느끼신 변화를 체크해보세요.
+            최근 기억, 수면, 감정, 활동 흐름에서 어긋난 부분이 있는지 가볍게 점검해보세요.
           </p>
         </header>
 

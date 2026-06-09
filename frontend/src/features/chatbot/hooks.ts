@@ -84,14 +84,18 @@ export const useChatbot = () => {
 
     try {
       const response = await chatbotApi.sendMessage({
+        sessionId,
         message: trimmedMessage,
-        persona: '생활습관 불균형형',
-        riskLevel: 'medium',
-        mainRiskFactors: [],
-        recommendations: [],
+        history: nextMessages
+          .filter((message) => message.role !== 'system')
+          .map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
       })
 
-      const bubbleText = response.message
+      setSessionId(response.sessionId)
+      const bubbleText = response.answer
         .replace(/\s*본 서비스는 의료적 진단을 제공하지 않습니다\.?\s*$/u, '')
         .trim()
       setMessages((prev) => [...prev, createMessage('assistant', bubbleText)])

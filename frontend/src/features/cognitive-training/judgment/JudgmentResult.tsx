@@ -27,6 +27,7 @@ interface JudgmentResultProps {
 
 export default function JudgmentResult({ score, total = 2, onRetry }: JudgmentResultProps) {
   const navigate = useNavigate();
+  void onRetry;
   const isPassed = score >= 1; // 2문제 중 1문제 이상 맞히면 통과로 간주
 
   return (

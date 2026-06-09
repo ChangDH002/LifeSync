@@ -23,8 +23,8 @@ export function AuthFormCard({
 }: AuthFormCardProps) {
   return (
     <SectionCard className="w-full max-w-2xl rounded-[28px] px-8 py-10">
-      <div className="mb-8 flex items-center gap-3 font-serif text-2xl font-black tracking-[-0.02em] text-tealDark">
-        <LogoMark />
+      <div className="mb-8 flex items-center gap-3 font-serif text-[22px] font-black tracking-[-0.02em] text-tealDark sm:text-2xl">
+        <LogoMark className="h-9 w-9 shrink-0 sm:h-10 sm:w-10" iconClassName="h-[18px] w-[18px] sm:h-5 sm:w-5" />
         LifeSync
       </div>
       <div className="section-badge">{badge}</div>
