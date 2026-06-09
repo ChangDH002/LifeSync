@@ -2,10 +2,6 @@
 
 > AI 기반 치매 예방 및 생활습관 관리 웹 애플리케이션
 
-[![Deploy LifeSync Frontend to GitHub Pages](https://github.com/ChangDH002/LifeSync/actions/workflows/deploy.yml/badge.svg)](https://github.com/ChangDH002/LifeSync/actions/workflows/deploy.yml)
-
-데모(GitHub Pages): **https://changdh002.github.io/LifeSync/**
-
 ---
 
 ## 1. 프로젝트 소개
