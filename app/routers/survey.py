@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.jwt import decode_access_token
-from app.schemas.survey import DementiaSurveySubmitRequest, DementiaSurveySubmitResponse
+from app.schemas.survey import (
+    DementiaSurveyScoreResponse,
+    DementiaSurveySubmitRequest,
+    DementiaSurveySubmitResponse,
+)
 from app.services import survey as survey_service
 
 router = APIRouter()
@@ -24,6 +28,13 @@ async def get_current_user_id(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         ) from None
+
+
+@router.post("/dementia-risk/score", response_model=DementiaSurveyScoreResponse)
+async def score_dementia_risk_survey(
+    body: DementiaSurveySubmitRequest,
+) -> DementiaSurveyScoreResponse:
+    return survey_service.calculate_dementia_risk_survey_score(req=body)
 
 
 @router.post("/dementia-risk", response_model=DementiaSurveySubmitResponse)

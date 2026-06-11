@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks';
 import { surveyApi } from '../api';
 import { useSurvey } from '../hooks';
-import { DementiaSurveySubmitResponse, SurveyOption, SurveyQuestion, SurveyResponse } from '../types';
+import { DementiaSurveyScoreResponse, SurveyOption, SurveyQuestion, SurveyResponse } from '../types';
 import { X } from 'lucide-react';
 
 function choice(label: string, value: string, score: number): SurveyOption {
@@ -48,60 +48,50 @@ function buildSurveyResponseMap(responses: SurveyResponse[]) {
   }, {});
 }
 
-const FACTOR_CATEGORY_MAP: Record<string, '인구통계' | '심혈관·대사' | '심리·신경' | '생활습관'> = {
-  age: '인구통계',
-  education_level: '인구통계',
-  bmi: '심혈관·대사',
-  high_cholesterol: '심혈관·대사',
-  has_diabetes: '심혈관·대사',
-  has_stroke: '심혈관·대사',
-  has_hypertension: '심혈관·대사',
-  has_atrial_fib: '심혈관·대사',
-  depression: '심리·신경',
-  has_tbi: '심리·신경',
-  loneliness: '심리·신경',
-  social_engagement: '심리·신경',
-  insomnia: '심리·신경',
-  cognitive_activity: '생활습관',
-  physical_activity: '생활습관',
-  fish_intake: '생활습관',
-  smoking_status: '생활습관',
-  pesticide_exposure: '생활습관',
-  alcohol_intake: '생활습관',
+const CATEGORY_MAX_SCORES: Record<string, number> = {
+  인구통계: 60,
+  '심혈관·대사': 15,
+  '심리·신경': 13,
+  생활습관: 7,
 }
 
-function buildServerCategoryScores(serverResult: DementiaSurveySubmitResponse | null) {
-  if (!serverResult?.cogdrisk || !serverResult?.anuAdri) {
-    return null;
-  }
+function getCategoryScoreDisplay(category: string, score: number) {
+  const maxScore = CATEGORY_MAX_SCORES[category]
+  const displayScore = Number(score.toFixed(1))
+  const positiveScore = Math.max(score, 0)
 
-  const summedFactors: Record<string, number> = {};
-
-  for (const [factor, score] of Object.entries(serverResult.cogdrisk.matchedFactors)) {
-    summedFactors[factor] = (summedFactors[factor] || 0) + score;
-  }
-
-  for (const [factor, score] of Object.entries(serverResult.anuAdri.matchedFactors)) {
-    summedFactors[factor] = (summedFactors[factor] || 0) + score;
-  }
-
-  const categoryScores: Record<string, number> = {
-    '인구통계': 0,
-    '심혈관·대사': 0,
-    '심리·신경': 0,
-    '생활습관': 0,
-  }
-
-  for (const [factor, score] of Object.entries(summedFactors)) {
-    const category = FACTOR_CATEGORY_MAP[factor]
-    if (category) {
-      categoryScores[category] += score
+  if (!maxScore) {
+    return {
+      ratio: positiveScore > 0 ? 1 : 0,
+      score: displayScore,
     }
   }
 
-  return Object.fromEntries(
-    Object.entries(categoryScores).map(([category, score]) => [category, Number(score.toFixed(1))]),
-  )
+  return {
+    ratio: Math.min(positiveScore / maxScore, 1),
+    score: displayScore,
+  }
+}
+
+function getCategoryScoreStatus(ratio: number) {
+  if (ratio >= 2 / 3) {
+    return {
+      className: 'text-red-500',
+      label: '우선 관리',
+    }
+  }
+
+  if (ratio >= 1 / 3) {
+    return {
+      className: 'text-secondary',
+      label: '주의',
+    }
+  }
+
+  return {
+    className: 'text-primary',
+    label: '양호',
+  }
 }
 
 const SURVEY_DATA: SurveyQuestion[] = [
@@ -270,8 +260,6 @@ export function DementiaSurvey() {
     progress, 
     isFinished, 
     responses,
-    yesCount, 
-    categoryScores,
     handleAnswer,
     currentIndex 
   } = useSurvey(SURVEY_DATA);
@@ -279,8 +267,6 @@ export function DementiaSurvey() {
   if (isFinished) {
     return (
       <SurveyResultView
-        yesCount={yesCount}
-        categoryScores={categoryScores}
         responses={responses}
       />
     );
@@ -311,7 +297,7 @@ export function DementiaSurvey() {
               key={option.value}
               onClick={() => handleAnswer(option.value)}
               className={`w-full py-7 text-[24px] font-bold rounded-[25px] transition-all shadow-sm ${
-                option.score > 0
+                option.score > -100
                   ? "bg-primary text-surface hover:bg-primary/80 shadow-md" //[#b86d30]
                   : "bg-surface border-2 border-border text-contentMid hover:bg-gray-100"//backgroundMin
               }`}
@@ -341,22 +327,19 @@ export function DementiaSurvey() {
 
 //설문 결과 뷰 컴포넌트
 function SurveyResultView({
-  yesCount,
-  categoryScores,
   responses,
 }: {
-  yesCount: number;
-  categoryScores: Record<string, number>;
   responses: SurveyResponse[];
 }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const hasSavedRef = useRef(false);
+  const [scoreState, setScoreState] = useState<'idle' | 'calculating' | 'calculated' | 'error'>('idle');
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated'>('idle');
-  const [serverResult, setServerResult] = useState<DementiaSurveySubmitResponse | null>(null);
+  const [serverResult, setServerResult] = useState<DementiaSurveyScoreResponse | null>(null);
 
-  const getResult = (finalScore?: number, riskLevel?: string) => {
-    if (riskLevel === '위험도 낮음' || (finalScore !== undefined && finalScore < 33)) {
+  const getResult = (finalScore: number, riskLevel?: string) => {
+    if (riskLevel === '위험도 낮음' || finalScore < 33) {
       return {
         status: '위험도 낮음',
         color: 'text-primary',
@@ -366,79 +349,87 @@ function SurveyResultView({
         to: '/',
       };
     }
-    if (riskLevel === '위험도 높음' || (finalScore !== undefined && finalScore >= 66)) {
+    if (riskLevel === '위험도 높음' || finalScore >= 66) {
       return {
         status: '위험도 높음',
         color: 'text-red-500',
         title: '고위험 인자 관리가 필요합니다.',
-        desc: '백엔드 계산 기준으로 대사질환, 기분 상태, 활동 부족, 연령 관련 요인이 복합적으로 반영됐습니다. 생활습관 개선과 함께 전문 상담을 권장합니다.',
+        desc: '대사질환, 기분 상태, 활동 부족, 연령 관련 요인이 복합적으로 반영됐습니다. 생활습관 개선과 함께 전문 상담을 권장합니다.',
         action: '전문가 상담 안내',
         to: '/medical-notice',
       };
     }
-    if (riskLevel === '위험도 보통' || finalScore !== undefined) {
-      return {
-        status: '위험도 보통',
-        color: 'text-secondary',
-        title: '핵심 위험 요인 관리가 필요합니다.',
-        desc: '백엔드 계산 기준으로 일부 고가중치 위험 인자가 반영됐습니다. 점수가 높게 나온 영역부터 우선 관리해보세요.',
-        action: '맞춤 루틴 시작하기',
-        to: '/training',
-      };
-    }
-    if (yesCount <= 7) return { 
-      status: "위험도 낮음", 
-      color: "text-primary", 
-      title: "전반적 위험도는 낮은 편입니다.", 
-      desc: "고가중치 위험 인자가 많지 않습니다. 현재의 생활습관과 활동 수준을 유지하는 것이 중요합니다.", 
-      action: "오늘의 루틴 유지하기", 
-      to: "/" 
-    };
-    if (yesCount <= 17) return { 
-      status: "위험도 보통", 
-      color: "text-secondary", 
-      title: "핵심 위험 요인 관리가 필요합니다.", 
-      desc: "연령, 대사질환, 우울·외상 이력, 활동 부족 같은 주요 항목 중 일부가 위험 신호로 나타났습니다. 점수가 높은 영역부터 우선 관리해보세요.", 
-      action: "맞춤 루틴 시작하기", 
-      to: "/training" 
-    };
-    return { 
-      status: "위험도 높음", 
-      color: "text-red-500", 
-      title: "고가중치 위험 인자 관리가 시급합니다.", 
-      desc: "연령대, 교육 수준, 대사질환, 우울, 외상, 활동 부족 등 주요 위험 인자가 복합적으로 나타났습니다. 생활습관 개선과 함께 전문 상담을 권장합니다.", 
-      action: "전문가 상담 안내", 
-      to: "/medical-notice" 
+
+    return {
+      status: '위험도 보통',
+      color: 'text-secondary',
+      title: '핵심 위험 요인 관리가 필요합니다.',
+      desc: '일부위험 인자가 반영됐습니다. 점수가 높게 나온 영역부터 우선 관리해보세요.',
+      action: '맞춤 루틴 시작하기',
+      to: '/training',
     };
   };
 
   const finalScore = serverResult?.finalRiskScore;
-  const result = getResult(finalScore, serverResult?.riskLevel);
-  const displayedScore = finalScore ?? yesCount;
-  const displayedCategoryScores = buildServerCategoryScores(serverResult) ?? categoryScores;
+  const result = finalScore !== undefined ? getResult(finalScore, serverResult?.riskLevel) : null;
+  const displayedCategoryScores = serverResult?.categoryScores ?? {};
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function calculateSurveyResult() {
+      setScoreState('calculating');
+
+      try {
+        const calculated = await surveyApi.calculateDementiaRiskScore({
+          surveyType: 'dementia-risk',
+          responses: buildSurveyResponseMap(responses),
+        });
+
+        if (!cancelled) {
+          setServerResult(calculated);
+          setScoreState('calculated');
+        }
+      } catch (error) {
+        console.error('survey score calculation failed', error);
+        if (!cancelled) {
+          setScoreState('error');
+        }
+      }
+    }
+
+    void calculateSurveyResult();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [responses]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function saveSurveyResult() {
-      if (hasSavedRef.current) {
+      if (scoreState !== 'calculated' || !serverResult) {
         return;
       }
-      hasSavedRef.current = true;
 
       if (!isAuthenticated) {
         setSaveState('unauthenticated');
         return;
       }
 
+      if (hasSavedRef.current) {
+        return;
+      }
+      hasSavedRef.current = true;
       setSaveState('saving');
 
       try {
         const saved = await surveyApi.saveDementiaRiskResult({
           surveyType: 'dementia-risk',
-          totalScore: yesCount,
-          riskLevel: result.status,
-          categoryScores,
+          totalScore: serverResult.finalRiskScore,
+          riskLevel: serverResult.riskLevel,
+          categoryScores: serverResult.categoryScores,
           responses: buildSurveyResponseMap(responses),
         });
 
@@ -459,14 +450,14 @@ function SurveyResultView({
     return () => {
       cancelled = true;
     };
-  }, [categoryScores, isAuthenticated, responses, result.status, yesCount]);
+  }, [isAuthenticated, responses, scoreState, serverResult]);
 
   const saveStatusMessage = (() => {
     if (saveState === 'saving') {
       return '설문 결과를 저장하고 있습니다.';
     }
     if (saveState === 'saved') {
-      return '설문 결과가 백엔드에 저장되었습니다.';
+      return '';
     }
     if (saveState === 'error') {
       return '설문 결과 저장에 실패했습니다. 잠시 후 다시 시도해주세요.';
@@ -477,35 +468,55 @@ function SurveyResultView({
     return '';
   })();
 
+  if (scoreState === 'error') {
+    return (
+      <div className="max-w-[600px] mx-auto bg-surface rounded-[30px] p-8 shadow-lg border-2 border-primaryPale text-center animate-fadeIn">
+        <div className="text-[24px] font-bold text-red-500 mb-4"> 점수를 계산하지 못했습니다.</div>
+        <p className="text-[20px] text-contentMid leading-[1.8] mb-8">
+        </p>
+        <button
+          onClick={() => navigate('/survey')}
+          className="w-full py-6 bg-primary text-surface text-[22px] font-bold rounded-[20px] shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          설문 다시 하기
+        </button>
+      </div>
+    );
+  }
+
+  if (scoreState === 'calculating' || !result || finalScore === undefined) {
+    return (
+      <div className="max-w-[600px] mx-auto bg-surface rounded-[30px] p-8 shadow-lg border-2 border-primaryPale text-center animate-fadeIn">
+        <div className="text-[24px] font-bold text-primary mb-4"> 점수를 계산하고 있습니다.</div>
+        <p className="text-[20px] text-contentMid leading-[1.8]">
+          
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[600px] mx-auto bg-surface rounded-[30px] p-8 shadow-lg border-2 border-primaryPale text-center animate-fadeIn">
       <div className={`text-[24px] font-bold ${result.color} mb-4`}>
-        {result.status} ({displayedScore}{finalScore !== undefined ? '점 / 100점' : '점'})
+        {result.status} ({finalScore}점 / 100점)
       </div>
       <h2 className="text-[28px] font-bold text-tealDark mb-4">{result.title}</h2>
-      {serverResult?.cogdrisk && serverResult?.anuAdri ? (
-        <div className="bg-surface border border-primary/10 rounded-[20px] p-5 mb-6 text-left">
-          <div className="flex justify-between items-center text-[18px] text-contentMid mb-2">
-            <span>CogDrisk</span>
-            <span className="font-bold text-tealDark">{serverResult.cogdrisk.normalizedScore}점</span>
-          </div>
-          <div className="flex justify-between items-center text-[18px] text-contentMid">
-            <span>ANU-ADRI</span>
-            <span className="font-bold text-tealDark">{serverResult.anuAdri.normalizedScore}점</span>
-          </div>
-        </div>
-      ) : null}
       <div className="bg-backgroundMin rounded-[20px] p-6 mb-8 text-left border border-primary/10">
         <h3 className="text-[26px] font-bold text-tealDark mb-4 text-center border-b border-primary/10 pb-2">영역별 분석</h3>
         <div className="space-y-3">
-          {Object.entries(displayedCategoryScores).map(([category, score]) => (
-            <div key={category} className="flex justify-between items-center">
-              <span className="text-[22px] text-contentMid font-medium">{category}</span>
-              <span className={`text-[22px] font-bold ${score >= 4 ? 'text-red-500' : score > 0 ? 'text-secondary' : 'text-primary'}`}>
-                {score}점 {score >= 4 ? '(우선 관리)' : score > 0 ? '(점검 필요)' : '(양호)'}
-              </span>
-            </div>
-          ))}
+          {Object.entries(displayedCategoryScores).map(([category, score]) => {
+            const scoreDisplay = getCategoryScoreDisplay(category, score)
+            const status = getCategoryScoreStatus(scoreDisplay.ratio)
+
+            return (
+              <div key={category} className="flex justify-between items-center">
+                <span className="text-[22px] text-contentMid font-medium">{category}</span>
+                <span className={`text-[22px] font-bold ${status.className}`}>
+                  {scoreDisplay.score}점 ({status.label})
+                </span>
+              </div>
+            )
+          })}
         </div>
       </div>
       <p className="text-[22px] text-contentMid leading-[1.8] mb-10 whitespace-pre-line text-center">

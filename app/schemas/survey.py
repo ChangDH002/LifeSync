@@ -130,3 +130,16 @@ class DementiaSurveySubmitResponse(BaseModel):
     cogdrisk: ToolScoreBreakdown | None = None
     anuAdri: ToolScoreBreakdown | None = None
     submittedAt: datetime
+
+
+class DementiaSurveyScoreResponse(BaseModel):
+    surveyType: str
+    surveyVersion: str
+    scoringVersion: str
+    totalScore: float
+    riskLevel: str
+    finalRiskScore: float
+    categoryScores: dict[str, float] = Field(default_factory=dict)
+    responseCount: int
+    cogdrisk: ToolScoreBreakdown
+    anuAdri: ToolScoreBreakdown

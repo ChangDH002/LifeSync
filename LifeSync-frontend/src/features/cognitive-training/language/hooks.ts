@@ -3,6 +3,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const MAX_QUIZ_COUNT = 5
+const DISTRACTOR_COUNT = 2
+const DISTRACTOR_CHARS = ['가', '나', '다', '라', '마', '바', '소', '수', '기', '지', '차', '타', '호', '별', '꽃']
+
+export interface ChoiceChar {
+  id: string
+  char: string
+  used: boolean
+}
 
 const WORD_QUIZ = [
   { answer: '사과', hint: '빨갛고 맛있는 가을 과일' },
@@ -17,9 +25,33 @@ const WORD_QUIZ = [
   { answer: '의자', hint: '앉을 때 사용하는 가구' },
 ]
 
+function shuffle<T>(items: T[]) {
+  const result = [...items]
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const currentItem = result[index]
+    result[index] = result[randomIndex]
+    result[randomIndex] = currentItem
+  }
+  return result
+}
+
+function buildChoiceChars(answer: string) {
+  const answerChars = answer.split('')
+  const distractors = shuffle(DISTRACTOR_CHARS.filter((char) => !answerChars.includes(char))).slice(
+    0,
+    DISTRACTOR_COUNT,
+  )
+  return shuffle([...answerChars, ...distractors]).map((char, index) => ({
+    id: `${answer}-${char}-${index}`,
+    char,
+    used: false,
+  }))
+}
+
 export const useCognitiveTraining = () => {
   const [currentIdx, setCurrentIdx] = useState(0)
-  const [shuffledChars, setShuffledChars] = useState<string[]>([])
+  const [shuffledChars, setShuffledChars] = useState<ChoiceChar[]>([])
   const [userAnswer, setUserAnswer] = useState<string>('')
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [score, setScore] = useState(0)
@@ -28,15 +60,12 @@ export const useCognitiveTraining = () => {
   const navigate = useNavigate()
 
   const shuffledQuizList = useMemo(() => {
-    return [...WORD_QUIZ]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, MAX_QUIZ_COUNT)
+    return shuffle(WORD_QUIZ).slice(0, MAX_QUIZ_COUNT)
   }, [])
 
   const initQuiz = useCallback(() => {
     const word = shuffledQuizList[currentIdx].answer
-    const chars = word.split('').sort(() => Math.random() - 0.5)
-    setShuffledChars(chars)
+    setShuffledChars(buildChoiceChars(word))
     setUserAnswer('')
     setIsCorrect(null)
     setIsTrainingComplete(false)
@@ -46,12 +75,15 @@ export const useCognitiveTraining = () => {
     initQuiz()
   }, [initQuiz])
 
-  const handleCharClick = (char: string, index: number) => {
+  const handleCharClick = (choice: ChoiceChar) => {
     if (isCorrect !== null) return
+    if (choice.used) return
 
-    const newAnswer = userAnswer + char
+    const newAnswer = userAnswer + choice.char
     setUserAnswer(newAnswer)
-    setShuffledChars((prev) => prev.filter((_, i) => i !== index))
+    setShuffledChars((prev) =>
+      prev.map((item) => (item.id === choice.id ? { ...item, used: true } : item)),
+    )
 
     if (newAnswer.length === shuffledQuizList[currentIdx].answer.length) {
       if (newAnswer === shuffledQuizList[currentIdx].answer) {

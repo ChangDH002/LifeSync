@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 
 from app.db import get_db
 from app.schemas.survey import (
+    DementiaSurveyScoreResponse,
     DementiaSurveyResultDocument,
     DementiaSurveySubmitRequest,
     DementiaSurveySubmitResponse,
@@ -115,11 +116,7 @@ def _validate_submission(
         )
 
 
-def build_dementia_risk_survey_document(
-    user_id: str,
-    req: DementiaSurveySubmitRequest,
-    submitted_at: datetime,
-) -> DementiaSurveyResultDocument:
+def _calculate_dementia_risk(req: DementiaSurveySubmitRequest) -> dict[str, Any]:
     raw_responses = req.raw_responses()
     submitted_responses = req.normalized_responses()
     normalized_responses = normalize_responses(submitted_responses)
@@ -135,8 +132,55 @@ def build_dementia_risk_survey_document(
         cogdrisk.matchedFactors,
         anu_adri.matchedFactors,
     )
+
+    return {
+        "raw_responses": raw_responses,
+        "submitted_responses": submitted_responses,
+        "normalized_responses": normalized_responses,
+        "cogdrisk": cogdrisk,
+        "anu_adri": anu_adri,
+        "final_risk_score": final_risk_score,
+        "risk_level": risk_level,
+        "category_scores": category_scores,
+        "ignored_fields": sorted(set(submitted_responses) - set(FACTOR_CATEGORY_MAP)),
+    }
+
+
+def calculate_dementia_risk_survey_score(
+    req: DementiaSurveySubmitRequest,
+) -> DementiaSurveyScoreResponse:
+    calculated = _calculate_dementia_risk(req)
+
+    return DementiaSurveyScoreResponse(
+        surveyType=req.surveyType,
+        surveyVersion=req.surveyVersion or DEFAULT_SURVEY_VERSION,
+        scoringVersion=SCORING_VERSION,
+        totalScore=calculated["final_risk_score"],
+        riskLevel=calculated["risk_level"],
+        finalRiskScore=calculated["final_risk_score"],
+        categoryScores=calculated["category_scores"],
+        responseCount=len(calculated["normalized_responses"]),
+        cogdrisk=calculated["cogdrisk"],
+        anuAdri=calculated["anu_adri"],
+    )
+
+
+def build_dementia_risk_survey_document(
+    user_id: str,
+    req: DementiaSurveySubmitRequest,
+    submitted_at: datetime,
+) -> DementiaSurveyResultDocument:
+    calculated = _calculate_dementia_risk(req)
+    raw_responses = calculated["raw_responses"]
+    submitted_responses = calculated["submitted_responses"]
+    normalized_responses = calculated["normalized_responses"]
+    cogdrisk = calculated["cogdrisk"]
+    anu_adri = calculated["anu_adri"]
+    final_risk_score = calculated["final_risk_score"]
+    risk_level = calculated["risk_level"]
+    category_scores = calculated["category_scores"]
     score_delta = _client_score_delta(req.totalScore, final_risk_score)
-    ignored_fields = sorted(set(submitted_responses) - set(FACTOR_CATEGORY_MAP))
+    ignored_fields = calculated["ignored_fields"]
 
     return DementiaSurveyResultDocument(
         user_id=user_id,

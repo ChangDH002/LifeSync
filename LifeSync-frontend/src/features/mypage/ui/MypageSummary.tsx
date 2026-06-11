@@ -358,7 +358,7 @@ export function MypageSummary() {
                   className={`rounded-[22px] border border-border px-5 py-5 ${getRecentActivityTone(activity.type)}`}
                 >
                   <p className="text-xl font-semibold tracking-[-0.02em]">{activity.title}</p>
-                  <p className="mt-1 text-base opacity-80">{activity.detail}</p>
+                  <p className="mt-1 text-base font-medium text-contentMid">{activity.detail}</p>
                 </div>
               ))}
             </div>

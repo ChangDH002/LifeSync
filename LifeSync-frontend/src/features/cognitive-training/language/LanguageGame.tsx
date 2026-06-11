@@ -64,19 +64,21 @@ export function LanguageGame() {
       </div>
 
       <div className={cn(isMobile ? 'flex flex-wrap justify-center gap-2' : isWeb ? 'grid grid-cols-4 gap-4' : 'flex flex-wrap justify-center gap-4')}>
-        {shuffledChars.map((char, idx) => (
+        {shuffledChars.map((choice) => (
           <button
-            key={idx}
+            key={choice.id}
             className={cn(
               'rounded-full border-2 border-gray-100 bg-white font-black text-gray-800 shadow-lg transition-all hover:border-primary active:scale-90',
+              choice.used ? 'cursor-not-allowed opacity-25 hover:border-gray-100 active:scale-100' : '',
               isMobile ? 'h-16 w-16 text-2xl' : 'h-24 w-24 text-4xl'
             )}
+            disabled={choice.used || isCorrect !== null}
             onClick={() => {
-              handleCharClick(char, idx)
+              handleCharClick(choice)
             }}
             type="button"
           >
-            {char}
+            {choice.char}
           </button>
         ))}
       </div>

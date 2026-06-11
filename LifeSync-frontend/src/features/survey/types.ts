@@ -42,13 +42,20 @@ export interface ToolScoreBreakdown {
   matchedFactors: Record<string, number>
 }
 
-export interface DementiaSurveySubmitResponse {
-  surveyId: string
+export interface DementiaSurveyScoreResponse {
   surveyType: string
+  surveyVersion: string
+  scoringVersion: string
   totalScore?: number
   riskLevel?: string
   finalRiskScore?: number
+  categoryScores: Record<string, number>
+  responseCount: number
   cogdrisk?: ToolScoreBreakdown
   anuAdri?: ToolScoreBreakdown
+}
+
+export interface DementiaSurveySubmitResponse extends DementiaSurveyScoreResponse {
+  surveyId: string
   submittedAt: string
 }
