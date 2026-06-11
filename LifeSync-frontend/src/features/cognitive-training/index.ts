@@ -1,3 +1,3 @@
 export * from './types';
-export { useTrainingActivityReporter } from './hooks';
+export { useGameDifficulty } from './difficulty';
 export * from './ui';

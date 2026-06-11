@@ -17,6 +17,9 @@ from app.services.dementia_risk_scoring import (
     calculate_risk_level,
     normalize_responses,
 )
+from app.services.persona_service import ( # New import
+    determine_persona,
+)
 
 SURVEY_TYPE = "dementia-risk"
 DEFAULT_SURVEY_VERSION = "dementia-risk-v1"
@@ -138,6 +141,18 @@ def build_dementia_risk_survey_document(
     score_delta = _client_score_delta(req.totalScore, final_risk_score)
     ignored_fields = sorted(set(submitted_responses) - set(FACTOR_CATEGORY_MAP))
 
+    # Determine persona and main risk factors based on the survey results
+    # For simplicity, main_risk_factors are derived from matched factors
+    derived_main_risk_factors = list(set(cogdrisk.matchedFactors.keys()) | set(anu_adri.matchedFactors.keys()))
+    
+    # Construct a simple survey summary from raw responses for persona determination
+    simple_survey_summary = ", ".join([f"{k}: {v}" for k, v in raw_responses.items()])
+    
+    derived_persona = determine_persona(
+        main_risk_factors=derived_main_risk_factors,
+        survey_summary=simple_survey_summary,
+    )
+
     return DementiaSurveyResultDocument(
         user_id=user_id,
         survey_type=req.surveyType,
@@ -160,6 +175,8 @@ def build_dementia_risk_survey_document(
             "normalized_score": cogdrisk.normalizedScore,
             "matched_factors": cogdrisk.matchedFactors,
         },
+        persona=derived_persona, # New field
+        main_risk_factors=derived_main_risk_factors, # New field
         anu_adri={
             "raw_score": anu_adri.rawScore,
             "normalized_score": anu_adri.normalizedScore,
@@ -183,6 +200,7 @@ def _response_from_document(
         riskLevel=doc.risk_level,
         finalRiskScore=doc.final_risk_score,
         categoryScores=doc.category_scores,
+        mainRiskFactors=doc.main_risk_factors,
         responseCount=doc.response_count,
         cogdrisk={
             "rawScore": doc.cogdrisk.raw_score,

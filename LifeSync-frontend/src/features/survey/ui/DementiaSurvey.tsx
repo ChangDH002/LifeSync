@@ -5,6 +5,7 @@ import { surveyApi } from '../api';
 import { useSurvey } from '../hooks';
 import { DementiaSurveySubmitResponse, SurveyOption, SurveyQuestion, SurveyResponse } from '../types';
 import { X } from 'lucide-react';
+import { SurveyResultRecommendations } from './SurveyResultRecommendations';
 
 function choice(label: string, value: string, score: number): SurveyOption {
   return { label, value, score };
@@ -354,6 +355,8 @@ function SurveyResultView({
   const hasSavedRef = useRef(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated'>('idle');
   const [serverResult, setServerResult] = useState<DementiaSurveySubmitResponse | null>(null);
+  const [personaData, setPersonaData] = useState<{ actionableRecommendations: any[] } | null>(null);
+  const [isLoadingPersona, setIsLoadingPersona] = useState(false);
 
   const getResult = (finalScore?: number, riskLevel?: string) => {
     if (riskLevel === '위험도 낮음' || (finalScore !== undefined && finalScore < 33)) {
@@ -461,6 +464,41 @@ function SurveyResultView({
     };
   }, [categoryScores, isAuthenticated, responses, result.status, yesCount]);
 
+  useEffect(() => {
+    if (!serverResult || !serverResult.mainRiskFactors) return;
+
+    const fetchRecommendations = async () => {
+      setIsLoadingPersona(true);
+      try {
+        const surveySummary = responses.map(r => `${r.questionId}: ${r.answer}`).join(', ');
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/persona`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            riskLevel: serverResult.riskLevel,
+            riskScore: serverResult.finalRiskScore,
+            mainRiskFactors: serverResult.mainRiskFactors,
+            surveySummary: surveySummary,
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setPersonaData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recommendations", error);
+      } finally {
+        setIsLoadingPersona(false);
+      }
+    };
+
+    void fetchRecommendations();
+  }, [serverResult, responses]);
+
   const saveStatusMessage = (() => {
     if (saveState === 'saving') {
       return '설문 결과를 저장하고 있습니다.';
@@ -525,6 +563,14 @@ function SurveyResultView({
         </p>
       ) : null}
       
+      {isLoadingPersona && (
+        <p className="my-8 text-[18px] font-medium text-contentMid">맞춤 실천 과제를 불러오는 중입니다...</p>
+      )}
+
+      {personaData && (
+        <SurveyResultRecommendations recommendations={personaData.actionableRecommendations} />
+      )}
+
       <div className="flex flex-col gap-5 mt-4">
         <button 
           onClick={() => navigate(result.to)}

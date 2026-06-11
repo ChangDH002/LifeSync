@@ -1,96 +1,89 @@
-import { ROUTE_PATHS } from '@/shared/config'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ROUTE_PATHS } from '@/shared/config'
+import { useGameDifficulty } from '../difficulty'
+import { getQuestionsForLevel, type LanguageGameQuestion } from './data'
 
 const MAX_QUIZ_COUNT = 5
-
-const WORD_QUIZ = [
-  { answer: '사과', hint: '빨갛고 맛있는 가을 과일' },
-  { answer: '나비', hint: '꽃에 앉는 날개 달린 곤충' },
-  { answer: '하늘', hint: '구름이 떠 있는 푸른 공간' },
-  { answer: '효도', hint: '부모님을 정성껏 모시는 일' },
-  { answer: '부채', hint: '손으로 흔들어 바람을 일으켜 더위를 식히는데 쓰는 물건' },
-  { answer: '달력', hint: '날짜와 요일이 표시된 종이나 책자 형태의 물건' },
-  { answer: '연필', hint: '글씨를 쓰거나 그림을 그릴 때 사용하는 도구' },
-  { answer: '우산', hint: '비를 맞지 않기 위해 머리 위에 쓰는 물건' },
-  { answer: '시계', hint: '시간을 알려주는 물건' },
-  { answer: '의자', hint: '앉을 때 사용하는 가구' },
-]
+const SCORE_PER_CORRECT = 100 / MAX_QUIZ_COUNT
 
 export const useCognitiveTraining = () => {
+  const navigate = useNavigate()
+  const { difficulty, increaseDifficulty } = useGameDifficulty('language')
+
+  const quizList = useMemo(() => getQuestionsForLevel(difficulty, MAX_QUIZ_COUNT), [difficulty])
+
   const [currentIdx, setCurrentIdx] = useState(0)
   const [shuffledChars, setShuffledChars] = useState<string[]>([])
   const [userAnswer, setUserAnswer] = useState<string>('')
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [score, setScore] = useState(0)
-  const [isTrainingComplete, setIsTrainingComplete] = useState(false)
-
-  const navigate = useNavigate()
-
-  const shuffledQuizList = useMemo(() => {
-    return [...WORD_QUIZ]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, MAX_QUIZ_COUNT)
-  }, [])
+  const [isGameEnd, setIsGameEnd] = useState(false)
 
   const initQuiz = useCallback(() => {
-    const word = shuffledQuizList[currentIdx].answer
-    const chars = word.split('').sort(() => Math.random() - 0.5)
-    setShuffledChars(chars)
+    if (!quizList[currentIdx]) return
+
+    const currentQuiz = quizList[currentIdx]
+    // 정답과 항상 다르게 섞이도록 보장
+    let newShuffled = currentQuiz.word.split('').sort(() => Math.random() - 0.5)
+    while (newShuffled.join('') === currentQuiz.word) {
+      newShuffled = currentQuiz.word.split('').sort(() => Math.random() - 0.5)
+    }
+    setShuffledChars(newShuffled)
     setUserAnswer('')
     setIsCorrect(null)
-    setIsTrainingComplete(false)
-  }, [currentIdx, shuffledQuizList])
+    setIsGameEnd(false)
+  }, [currentIdx, quizList])
 
   useEffect(() => {
     initQuiz()
   }, [initQuiz])
 
+  const proceedToNext = useCallback(() => {
+    if (currentIdx < MAX_QUIZ_COUNT - 1) {
+      setCurrentIdx((prev) => prev + 1)
+    } else {
+      setIsGameEnd(true)
+      // 80% 이상 맞췄을 때 난이도 상승
+      if (score >= 80) {
+        increaseDifficulty()
+      }
+      navigate(ROUTE_PATHS.trainingLanguageResult, {
+        state: { score: score / SCORE_PER_CORRECT, total: MAX_QUIZ_COUNT },
+      })
+    }
+  }, [currentIdx, score, navigate, increaseDifficulty])
+
   const handleCharClick = (char: string, index: number) => {
     if (isCorrect !== null) return
 
+    // 사용자가 선택한 글자를 답변에 추가
     const newAnswer = userAnswer + char
     setUserAnswer(newAnswer)
+    // 선택지에서 해당 글자 제거
     setShuffledChars((prev) => prev.filter((_, i) => i !== index))
 
-    if (newAnswer.length === shuffledQuizList[currentIdx].answer.length) {
-      if (newAnswer === shuffledQuizList[currentIdx].answer) {
+    // 정답 단어 길이와 같아지면 정답 확인
+    if (newAnswer.length === quizList[currentIdx].word.length) {
+      if (newAnswer === quizList[currentIdx].word) {
         setIsCorrect(true)
-        const updatedScore = score + 25
-        setScore(updatedScore)
-        setTimeout(() => {
-          if (currentIdx < MAX_QUIZ_COUNT - 1) {
-            setCurrentIdx((prev) => prev + 1)
-          } else {
-            setIsTrainingComplete(true)
-            const finalCorrectCount = updatedScore / 25
-            navigate(ROUTE_PATHS.trainingLanguageResult, {
-              state: { score: finalCorrectCount },
-            })
-          }
-        }, 1200)
+        setScore((prev) => prev + SCORE_PER_CORRECT)
+        setTimeout(proceedToNext, 1200)
       } else {
         setIsCorrect(false)
-        setTimeout(() => {
-          if (currentIdx < MAX_QUIZ_COUNT - 1) {
-            setCurrentIdx((prev) => prev + 1)
-          } else {
-            const finalCorrectCount = score / 25
-            navigate(ROUTE_PATHS.trainingLanguageResult, {
-              state: { score: finalCorrectCount },
-            })
-          }
-        }, 1200)
+        setTimeout(proceedToNext, 1200)
       }
     }
   }
 
   return {
-    quiz: shuffledQuizList[currentIdx],
+    quiz: quizList[currentIdx]
+      ? { answer: quizList[currentIdx].word, hint: quizList[currentIdx].category }
+      : { answer: '', hint: '문제 로딩 중...' },
     shuffledChars,
     userAnswer,
     isCorrect,
-    isTrainingComplete,
+    isTrainingComplete: isGameEnd, // 호환성을 위해 이름 유지
     score,
     handleCharClick,
     resetQuiz: initQuiz,

@@ -15,7 +15,7 @@ const primaryFeatureCards: HomeFeatureCard[] = [
     icon: ClipboardList,
     title: '라이프 싱크 체크',
     body: '수면, 활동, 감정, 기억 습관을 함께 살펴보며 지금 내 일상 리듬이 어디에서 어긋나 있는지 확인합니다.',
-    to: '/login',
+    to: '/survey',
   },
   {
     icon: MessageCircle,

@@ -1,9 +1,7 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from app.core.jwt import decode_access_token
+from fastapi import APIRouter, Depends, Query
+from app.core.dependencies import get_current_user_id
 from app.schemas.risk_assessment import (
     ANUADRIInput,
     ANUADRIResult,
@@ -19,25 +17,6 @@ from app.services.risk_assessment import (
 )
 
 router = APIRouter()
-bearer_scheme = HTTPBearer(auto_error=False)
-
-
-async def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-) -> str:
-    if not credentials or credentials.scheme.lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-    try:
-        return decode_access_token(credentials.credentials)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        ) from None
-
 
 @router.post("/anu-adri/calculate", response_model=ANUADRIResult)
 async def calculate_anu_adri_score(

@@ -88,6 +88,7 @@ class RoutineCompletionActionResponse(BaseModel):
     date: str
     completed: bool
     completedAt: datetime | None = None
+    wateringChanceGranted: bool = False
 
 
 class RoutineHistoryDay(BaseModel):

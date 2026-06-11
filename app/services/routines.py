@@ -265,11 +265,22 @@ async def complete_routine(
     )
     await db.routine_completions.insert_one(completion.model_dump())
 
+    watering_chance_granted = False
+    # 일일 루틴 완료 시 물주기 기회 부여
+    if routine_item.frequency == "daily":
+        result = await db.watering_chances.update_one(
+            {"user_id": user_id, "date": target_date},
+            {"$setOnInsert": {"user_id": user_id, "date": target_date, "granted_at": now}},
+            upsert=True,
+        )
+        watering_chance_granted = result.upserted_id is not None
+
     return RoutineCompletionActionResponse(
         routineId=routine_id,
         date=target_date,
         completed=True,
         completedAt=now,
+        wateringChanceGranted=watering_chance_granted,
     )
 
 

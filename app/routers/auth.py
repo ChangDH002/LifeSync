@@ -1,29 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import APIRouter, Depends, HTTPException, status
 from pymongo.errors import DuplicateKeyError
 
 from app.core.jwt import (
     create_access_token,
     create_refresh_token,
-    decode_access_token,
     decode_refresh_token,
 )
 from app.schemas.auth import AuthSessionResponse, LoginBody, RefreshBody, RegisterBody
 from app.schemas.user import UserProfile
-from app.services import refresh_tokens as refresh_tokens_service
-from app.services import users as users_service
+from app.services import refresh_tokens as refresh_tokens_service, users as users_service
+
+from app.core.dependencies import get_current_user_id
 
 router = APIRouter()
-bearer_scheme = HTTPBearer(auto_error=False)
-
-
-def _user_to_out(doc: dict) -> UserProfile:
-    return UserProfile(
-        id=str(doc["_id"]),
-        email=doc["email"],
-        name=doc.get("name"),
-    )
-
 
 @router.post("/signup", response_model=AuthSessionResponse, status_code=status.HTTP_201_CREATED)
 async def signup(body: RegisterBody) -> AuthSessionResponse:
@@ -52,7 +41,7 @@ async def signup(body: RegisterBody) -> AuthSessionResponse:
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=refresh_token,
-        user=_user_to_out(doc),
+        user=users_service._user_doc_to_profile(doc),
     )
 
 
@@ -78,7 +67,7 @@ async def login(body: LoginBody) -> AuthSessionResponse:
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=refresh_token,
-        user=_user_to_out(doc),
+        user=users_service._user_doc_to_profile(doc),
     )
 
 
@@ -128,30 +117,18 @@ async def refresh(body: RefreshBody) -> AuthSessionResponse:
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=new_refresh_token,
-        user=_user_to_out(doc),
+        user=users_service._user_doc_to_profile(doc),
     )
 
 
 @router.get("/me", response_model=UserProfile)
 async def me(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    user_id: str = Depends(get_current_user_id),
 ) -> UserProfile:
-    if not credentials or credentials.scheme.lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
-        )
-
-    try:
-        user_id = decode_access_token(credentials.credentials)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
-        ) from None
-
     doc = await users_service.get_user_by_id(user_id)
     if doc is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    return _user_to_out(doc)
+    return users_service._user_doc_to_profile(doc)

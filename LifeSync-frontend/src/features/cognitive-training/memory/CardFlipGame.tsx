@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
+import React from 'react'
 import { GameLayout } from '../ui/GameLayout'
-import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from '../memory/hooks'
 import { useNavigate } from 'react-router-dom';
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
+import { icons } from 'lucide-react'
 
 export function CardFlipGame() {
   const {
@@ -19,24 +19,9 @@ export function CardFlipGame() {
     timeLeft,
   } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
-  const { reportCompletion } = useTrainingActivityReporter({
-    gameCategory: 'memory',
-    gameName: '카드 짝 맞추기',
-  })
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0')
   const seconds = String(timeLeft % 60).padStart(2, '0')
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isGameOver) {
-      return
-    }
-
-    void reportCompletion({
-      trainingTitle: '카드 짝 맞추기',
-      remainingTime: timeLeft,
-    })
-  }, [isGameOver, reportCompletion, timeLeft])
 
   return (
     <GameLayout title="하루 5분 회상 퀴즈" description="똑같은 그림 카드 2장을 찾아 기억력을 천천히 깨워보세요.">
@@ -106,11 +91,11 @@ export function CardFlipGame() {
                   ) : null}
 
                   <span
-                    className={`absolute inset-0 flex items-center justify-center text-5xl leading-none transition-opacity duration-300 ${
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
                       card.isFlipped || card.isMatched ? 'opacity-100' : 'opacity-0'
-                    } ${isMobile ? 'text-3xl' : isWeb ? 'text-4xl' : 'text-4xl'}`}
+                    }`}
                   >
-                    {card.content}
+                    {React.createElement(icons[card.content as keyof typeof icons], { className: cn('h-12 w-12 text-tealDark', isMobile ? 'h-10 w-10' : 'h-14 w-14'), strokeWidth: 2.5 })}
                   </span>
 
                   <span
@@ -136,7 +121,7 @@ export function CardFlipGame() {
               )}
              onClick={() => {
                 const finalElapsedTime = 90 - timeLeft;
-                navigate('/training/MemoryResult', { state: { time: finalElapsedTime } });
+                navigate('/training/memoryResult', { state: { time: finalElapsedTime } });
               }}
               type="button"
             >

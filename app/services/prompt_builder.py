@@ -64,3 +64,26 @@ def extract_related_topics(retrieved: list[dict]) -> list[str]:
         if cat and cat not in topics:
             topics.append(cat)
     return topics[:5]
+
+
+def build_initial_chat_message(
+    persona: str,
+    risk_level: str,
+    main_risk_factors: list[str],
+    actionable_recommendations: list[dict],
+) -> str:
+    """
+    사용자의 최근 설문 결과를 바탕으로 AI 챗봇의 초기 대화 메시지를 생성합니다.
+    """
+    factors_str = ", ".join(main_risk_factors) if main_risk_factors else "특별한 위험 요인 없음"
+
+    # Craft a personalized opening
+    opening = f"안녕하세요, {persona}님! 최근 설문 결과를 보니 '{risk_level}' 수준으로 나타났고, 주요 위험 요인으로는 '{factors_str}' 등이 있으시네요."
+
+    if actionable_recommendations:
+        rec_titles = [rec['title'] for rec in actionable_recommendations[:2]] # Take top 2 recommendations
+        recommendation_part = f" 특히 '{rec_titles[0]}'와 같은 활동을 추천해 드렸는데, 혹시 이와 관련해서 궁금한 점이 있으신가요?"
+    else:
+        recommendation_part = " 혹시 건강 관리에 대해 궁금한 점이나 도움이 필요하신가요?"
+
+    return f"{opening}{recommendation_part} {SAFETY_NOTICE}"

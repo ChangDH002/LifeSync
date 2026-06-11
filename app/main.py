@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,15 +17,26 @@ from app.routers import social_auth
 from app.routers import survey
 from app.routers import training
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Connecting to database...")
     await connect_db()
-    if is_db_connected():
+    if not is_db_connected():
+        logger.critical("=" * 80)
+        logger.critical("!!! 데이터베이스 연결 실패 !!!")
+        logger.critical("MongoDB 서버가 실행 중인지, .env 파일의 MONGODB_URL이 올바른지 확인해주세요.")
+        logger.critical(f"설정된 MONGODB_URL: {settings.mongodb_url}")
+        logger.critical("=" * 80)
+    else:
+        logger.info("Database connection successful.")
         from app.services.users import seed_dev_user
 
         await seed_dev_user()
     yield
+    logger.info("Closing database connection...")
     await close_db()
 
 

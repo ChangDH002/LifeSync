@@ -11,12 +11,12 @@ const DESIGN_SCALE = {
   }
 };
 
-interface AttentionResultProps {
+interface CardFlipResultProps {
   time: number;
   onRetry: () => void;
 }
 
-export default function AttentionResult({ time = 0, onRetry }: AttentionResultProps) {
+export default function CardFlipResult({ time = 0, onRetry }: CardFlipResultProps) {
   const navigate = useNavigate();
   const isPassed = time <= 90;
 

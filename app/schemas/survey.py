@@ -1,99 +1,55 @@
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
+class ToolScoreBreakdown(BaseModel):
+    raw_score: float = Field(..., alias="rawScore")
+    normalized_score: float = Field(..., alias="normalizedScore")
+    matched_factors: dict[str, float] = Field(..., alias="matchedFactors")
 
-class SurveyAnswerItem(BaseModel):
-    questionId: str
-    answer: str
-    score: float | None = None
+class CogDriskScoreDetail(ToolScoreBreakdown):
+    pass
 
-
-class DementiaRiskSurveyResponses(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    age: int | None = Field(default=None, ge=0, le=120)
-    sex: Literal["male", "female"] | None = None
-    education_level: Literal["high", "medium", "low"] | None = None
-    bmi: float | None = None
-    high_cholesterol: bool | None = None
-    has_diabetes: bool | None = None
-    has_stroke: bool | None = None
-    has_hypertension: bool | None = None
-    has_atrial_fib: bool | None = None
-    depression: bool | None = None
-    has_tbi: bool | None = None
-    loneliness: Literal["low", "medium", "high"] | None = None
-    social_engagement: Literal["low", "medium", "high"] | None = None
-    insomnia: bool | None = None
-    cognitive_activity: Literal["low", "medium", "high"] | None = None
-    physical_activity: Literal["low", "medium", "high", "sufficient", "insufficient"] | None = None
-    fish_intake: Literal["none", "weekly", "frequent", "daily", "weekly_or_more", "sometimes", "rarely"] | None = None
-    smoking_status: Literal["never", "former", "current"] | None = None
-    pesticide_exposure: bool | None = None
-    alcohol_intake: Literal["none", "light_to_moderate", "high"] | None = None
-
-    def answered_count(self) -> int:
-        return len(self.model_dump(exclude_none=True))
+class AnuAdriScoreDetail(ToolScoreBreakdown):
+    pass
 
 
 class DementiaSurveySubmitRequest(BaseModel):
-    surveyType: str = Field(default="dementia-risk")
+    surveyType: str
     surveyVersion: str | None = None
     clientVersion: str | None = None
-    totalScore: float | None = Field(default=None, ge=0)
+    totalScore: float | None = None
     riskLevel: str | None = None
     categoryScores: dict[str, float] | None = None
-    responses: DementiaRiskSurveyResponses | list[SurveyAnswerItem] | dict[str, Any]
+    responses: dict[str, Any]
 
-    def response_count(self) -> int:
-        if isinstance(self.responses, list):
-            return len(self.responses)
-        if isinstance(self.responses, DementiaRiskSurveyResponses):
-            return self.responses.answered_count()
-        return len(self.responses)
-
-    def raw_responses(self) -> Any:
-        if isinstance(self.responses, list):
-            return [item.model_dump(exclude_none=True) for item in self.responses]
-        if isinstance(self.responses, DementiaRiskSurveyResponses):
-            return self.responses.model_dump(exclude_none=True)
+    def raw_responses(self) -> dict[str, Any]:
         return self.responses
 
     def normalized_responses(self) -> dict[str, Any]:
-        if isinstance(self.responses, list):
-            return {item.questionId: item.answer for item in self.responses}
-        if isinstance(self.responses, DementiaRiskSurveyResponses):
-            return self.responses.model_dump(exclude_none=True)
+        # 클라이언트에서 이미 정규화된 응답을 보낼 수도 있으므로,
+        # 여기서는 단순히 `responses`를 반환하거나, 필요시 추가 정규화 로직을 구현
         return self.responses
 
 
-class ToolScoreBreakdown(BaseModel):
-    rawScore: float
-    normalizedScore: float
-    matchedFactors: dict[str, float]
-
-
-class SurveyScoreToolDocument(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    raw_score: float
-    normalized_score: float
-    matched_factors: dict[str, float]
-
-
-class ClientSubmittedSurveyScore(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    total_score: float | None = None
-    risk_level: str | None = None
-    category_scores: dict[str, float] | None = None
+class DementiaSurveySubmitResponse(BaseModel):
+    surveyId: str
+    surveyType: str
+    surveyVersion: str
+    scoringVersion: str
+    totalScore: float
+    riskLevel: str
+    finalRiskScore: float
+    categoryScores: dict[str, float]
+    mainRiskFactors: list[str] = Field(default_factory=list)
+    responseCount: int
+    cogdrisk: CogDriskScoreDetail
+    anuAdri: AnuAdriScoreDetail
+    submittedAt: datetime
 
 
 class DementiaSurveyResultDocument(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
     user_id: str
     survey_type: str
     survey_version: str
@@ -103,30 +59,44 @@ class DementiaSurveyResultDocument(BaseModel):
     risk_level: str
     final_risk_score: float
     category_scores: dict[str, float]
-    responses: Any
+    responses: dict[str, Any]
     normalized_responses: dict[str, Any]
-    ignored_fields: list[str] = Field(default_factory=list)
-    client_submitted: ClientSubmittedSurveyScore
+    ignored_fields: list[str]
+    client_submitted: dict[str, Any]
     score_mismatch: bool
-    score_delta: float | None = None
+    score_delta: float | None
     submission_policy: str
-    cogdrisk: SurveyScoreToolDocument
-    anu_adri: SurveyScoreToolDocument
+    cogdrisk: CogDriskScoreDetail
+    anu_adri: AnuAdriScoreDetail
+    persona: str | None = None  # Add persona
+    main_risk_factors: list[str] = []  # Add main risk factors
     response_count: int
     submitted_at: datetime
     created_at: datetime
 
 
-class DementiaSurveySubmitResponse(BaseModel):
+class LatestSurveySummary(BaseModel):
     surveyId: str
-    surveyType: str
-    surveyVersion: str
-    scoringVersion: str
-    totalScore: float | None = None
-    riskLevel: str | None = None
-    finalRiskScore: float | None = None
-    categoryScores: dict[str, float] = Field(default_factory=dict)
-    responseCount: int
-    cogdrisk: ToolScoreBreakdown | None = None
-    anuAdri: ToolScoreBreakdown | None = None
+    totalScore: float
+    riskLevel: str
+    categoryScores: dict[str, float]
     submittedAt: datetime
+    persona: str | None = None  # Include persona
+    mainRiskFactors: list[str] = []  # Include main risk factors
+
+
+class MypageSummaryResponse(BaseModel):
+    userEmail: str
+    latestSurvey: LatestSurveySummary | None = None
+    # ... other fields ...
+
+
+class RoutineRecommendation(BaseModel):
+    routineId: str
+    title: str
+    description: str
+    category: str
+    recommendationReason: str
+    frequency: str
+    priority: int
+    active: bool

@@ -136,11 +136,59 @@ dementia/
 
 ## 실행
 
+로컬에서 전체 서비스를 실행하려면 백엔드와 프론트엔드를 각각 다른 터미널에서 실행해야 합니다.
+
+### 1. 사전 준비
+
+- **MongoDB 서버 실행 (필수!):** 백엔드 서버는 데이터베이스에 의존하므로, **가장 먼저** 로컬 PC에서 MongoDB 서버를 실행해야 합니다. (예: Windows 서비스에서 'MongoDB Server'를 시작하거나, 터미널에서 `mongod` 명령어 실행)
+  - > **Note:** 만약 터미널에서 `'mongod' is not recognized...` 오류가 발생하면, MongoDB의 `bin` 디렉토리(예: `C:\Program Files\MongoDB\Server\[version]\bin`)를 시스템의 `PATH` 환경 변수에 추가해야 합니다.
+- 백엔드와 프론트엔드에 각각 `.env`와 `.env.local` 파일이 올바르게 설정되어 있어야 합니다.
+
+### 2. 백엔드 서버 실행
+
+프로젝트의 루트 디렉토리(`LifeSync`)에서 터미널을 열고 다음을 실행합니다.
+
 ```bash
 cd "폴더이름"
 python -m pip install -r requirements.txt
 npx --yes concurrently --names api,web --prefix-colors cyan,magenta "npx --yes wait-on tcp:127.0.0.1:27017 -t 120000 && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000" "cd /d c:..\LifeSync-frontend && npm run dev"
 '''
+# 1. 의존성 설치
+pip install -r requirements.txt
+
+# 2. 백엔드 서버 실행 (포트 8002)
+python -m uvicorn app.main:app --reload --port 8002
+```
+
+### 3. AI 챗봇 서버 실행
+
+별도의 터미널을 열어 `LifeSync-ai/AI_Chatbot` 디렉토리로 이동한 후 다음을 실행합니다.
+
+```bash
+# 1. LifeSync-ai/AI_Chatbot 폴더로 이동
+cd LifeSync-ai/AI_Chatbot
+
+# 2. 의존성 설치
+pip install -r requirements.txt
+
+# 3. AI 챗봇 서버 실행 (포트 8001)
+python -m uvicorn main:app --reload --port 8001
+```
+
+### 4. 프론트엔드 서버 실행
+
+별도의 터미널을 열어 `LifeSync-frontend` 디렉토리로 이동한 후 다음을 실행합니다.
+
+```bash
+# 1. LifeSync-frontend 폴더로 이동
+cd LifeSync-frontend
+
+# 2. 의존성 설치
+npm install
+
+# 3. 프론트엔드 개발 서버 실행 (포트 5173)
+npm run dev
+```
 
 
 API 문서: `http://127.0.0.1:8000/docs`

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, cast
 
 from app.db import get_db
-from app.schemas.routines import RoutineDefinitionDocument, UserRoutineDocument
+from app.schemas.routines import (
+    RoutineDefinitionDocument,
+    RoutineItem,
+    TodayRoutinesResponse,
+    UserRoutineDocument,
+)
 from app.schemas.survey import DementiaSurveyResultDocument
 from app.services.routines import ROUTINE_DEFINITION_CATALOG
 
@@ -256,3 +261,37 @@ async def assign_user_routines_from_survey(
         await db.user_routines.insert_many([doc.model_dump() for doc in documents])
 
     return documents
+
+
+async def get_user_routine_recommendations(user_id: str) -> TodayRoutinesResponse:
+    """
+    사용자의 최신 설문 결과를 바탕으로 맞춤 루틴 추천 목록을 반환합니다.
+    설문 결과가 없으면 기본 루틴을 반환합니다.
+    """
+    from app.services.survey import get_latest_dementia_risk_survey
+
+    db = get_db()
+    survey = await get_latest_dementia_risk_survey(user_id)
+    definitions = await _load_routine_definitions(db)
+
+    if survey:
+        selections = select_routine_definitions_for_survey(survey, definitions=definitions)
+        items = [
+            RoutineItem(
+                id=definition.routine_id,
+                title=definition.title,
+                completed=False,  # 추천 목록에서는 항상 미완료 상태
+                category=definition.category,
+                description=definition.description,
+                recommendationReason=reason,
+                frequency=definition.frequency,
+                priority=priority,
+                active=definition.active,
+            )
+            for definition, priority, reason in selections
+        ]
+        return TodayRoutinesResponse(items=items)
+
+    # 설문 결과가 없을 경우, 기본 루틴 목록 반환
+    fallback_items = [cast(RoutineItem, item) for item in ROUTINE_DEFINITION_CATALOG[:3]]
+    return TodayRoutinesResponse(items=fallback_items)

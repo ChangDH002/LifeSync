@@ -1,16 +1,23 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import AttentionResult from '@/features/cognitive-training/attention/AttentionResult';
+import React from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import AttentionResult from '@/features/cognitive-training/attention/AttentionResult'
+import { useTrainingParticipation } from '@/features/cognitive-training/hooks'
 
 export function AttentionGameResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const score = location.state?.score ?? 0;
-  const total = 4;
+  const total = location.state?.total ?? 4;
+
+  useTrainingParticipation({
+    gameCategory: 'attention',
+    gameName: '집중력 강화 훈련',
+    metadata: { score, total },
+  })
 
   const handleRetry = () => {
-    navigate('/training/attentionResult');
+    navigate('/training/attention');
   };
 
   return (

@@ -1,17 +1,12 @@
 import { useViewportMode } from '@/shared/hooks'
 import { cn } from '@/shared/lib'
-import { useTrainingActivityReporter } from '../hooks'
 import { useCognitiveTraining } from './hooks'
 import { useNavigate } from 'react-router-dom'
 
 export function JudgmentGame() {
   const navigate = useNavigate()
-  const { scenario, selectedIdx, handleSelect, nextScenario, isLast, score } = useCognitiveTraining()
+  const { scenario, currentIdx, selectedIdx, handleSelect, nextScenario, isLast, score, totalQuestions } = useCognitiveTraining()
   const { isMobile, isWeb } = useViewportMode()
-  const { reportCompletion } = useTrainingActivityReporter({
-    gameCategory: 'judgment',
-    gameName: '상황 판단 퀴즈',
-  })
 
   return (
     <div
@@ -23,7 +18,7 @@ export function JudgmentGame() {
       <div className={cn('font-medium text-gray-500', isMobile ? 'flex flex-col gap-2' : 'flex items-center justify-between')}>
         <span className={cn(isMobile ? 'text-base' : 'text-lg')}>상황 판단력 훈련</span>
         <span className={cn('rounded-full bg-primary/10 text-primary', isMobile ? 'px-3 py-1 text-sm' : 'px-4 py-1')}>
-          문제 {scenario.id}
+          문제 {currentIdx + 1}
         </span>
       </div>
 
@@ -91,11 +86,7 @@ export function JudgmentGame() {
           <button
             onClick={() => {
               if (isLast) {
-                void reportCompletion({
-                  trainingTitle: '상황 판단 퀴즈 완료',
-                  scenarioId: scenario.id,
-                })
-                navigate('/training/judgmentResult', { state: { score } })
+                navigate('/training/judgmentResult', { state: { score, total: totalQuestions } })
               } else {
                 nextScenario()
               }

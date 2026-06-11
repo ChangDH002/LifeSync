@@ -9,6 +9,7 @@ from pymongo.errors import DuplicateKeyError
 from app.core.password_hash import hash_password, verify_password
 from app.db import get_db
 
+from app.schemas.user import UserProfile
 logger = logging.getLogger(__name__)
 
 
@@ -54,6 +55,14 @@ async def get_user_by_id(user_id: str) -> dict[str, Any] | None:
     except InvalidId:
         return None
     return await get_db().users.find_one({"_id": oid})
+
+
+def _user_doc_to_profile(doc: dict) -> UserProfile:
+    return UserProfile(
+        id=str(doc["_id"]),
+        email=doc["email"],
+        name=doc.get("name", ""),
+    )
 
 
 async def create_social_user(

@@ -4,18 +4,9 @@ from app.core.jwt import create_access_token, create_refresh_token
 from app.schemas.auth import AuthSessionResponse
 from app.schemas.social_auth import SocialCallbackBody, SocialStartResponse
 from app.schemas.user import UserProfile
-from app.services import refresh_tokens as refresh_tokens_service
-from app.services import social_auth as social_auth_service
-from app.services import users as users_service
+from app.services import refresh_tokens as refresh_tokens_service, social_auth as social_auth_service, users as users_service
 
 router = APIRouter()
-
-def _user_to_out(doc: dict) -> UserProfile:
-    return UserProfile(
-        id=str(doc["_id"]),
-        email=doc["email"],
-        name=doc.get("name"),
-    )
 
 
 @router.get("/google/start", response_model=SocialStartResponse)
@@ -78,7 +69,7 @@ async def google_callback(body: SocialCallbackBody) -> AuthSessionResponse:
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=refresh_token,
-        user=_user_to_out(user_doc),
+        user=users_service._user_doc_to_profile(user_doc),
     )
 
 
@@ -114,7 +105,7 @@ async def kakao_callback(body: SocialCallbackBody) -> AuthSessionResponse:
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=refresh_token,
-        user=_user_to_out(user_doc),
+        user=users_service._user_doc_to_profile(user_doc),
     )
 
 
@@ -155,7 +146,7 @@ async def google_redirect(
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=refresh_token,
-        user=_user_to_out(user_doc),
+        user=users_service._user_doc_to_profile(user_doc),
     )
 
 
@@ -196,6 +187,5 @@ async def kakao_redirect(
     return AuthSessionResponse(
         accessToken=access_token,
         refreshToken=refresh_token,
-        user=_user_to_out(user_doc),
+        user=users_service._user_doc_to_profile(user_doc),
     )
-

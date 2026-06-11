@@ -66,28 +66,22 @@ def test_persona_survey_summary_fallback():
 
 # ── 2. 추천 배열 비어있지 않음 ────────────────────────────────────
 
-def test_recommendations_not_empty():
-    from app.services.recommendation_service import get_recommendations
-    for persona in ["운동 부족형", "인지활동 부족형", "사회적 고립형", "생활습관 불균형형"]:
-        recs = get_recommendations(persona)
-        assert recs.get("dailyRoutines"), f"{persona}: dailyRoutines 비어있음"
-        assert recs.get("cognitiveTrainings"), f"{persona}: cognitiveTrainings 비어있음"
-        assert recs.get("lifestyleTips"), f"{persona}: lifestyleTips 비어있음"
+def test_actionable_recommendations_not_empty():
+    """새로운 추천 시스템이 위험 요인에 따라 추천을 반환하는지 테스트"""
+    from app.services.actionable_recommendation import get_recommendations_for_factors
 
+    # 특정 위험 요인이 있을 때
+    recs_for_physical = get_recommendations_for_factors(["physical_activity"])
+    assert len(recs_for_physical) > 0
+    assert any(rec["category"] == "신체활동" for rec in recs_for_physical)
 
-def test_daily_routines_not_empty():
-    from app.services.recommendation_service import get_daily_routines
-    for persona in ["운동 부족형", "인지활동 부족형", "사회적 고립형", "생활습관 불균형형"]:
-        routines = get_daily_routines(persona)
-        assert len(routines) > 0, f"{persona}: dailyRoutines 비어있음"
+    # 여러 위험 요인이 있을 때
+    recs_for_multiple = get_recommendations_for_factors(["insomnia", "cognitive_activity"])
+    assert len(recs_for_multiple) > 0
 
-
-def test_cognitive_trainings_not_empty():
-    from app.services.recommendation_service import get_cognitive_trainings
-    for persona in ["운동 부족형", "인지활동 부족형", "사회적 고립형", "생활습관 불균형형"]:
-        trainings = get_cognitive_trainings(persona)
-        assert len(trainings) > 0, f"{persona}: cognitiveTrainings 비어있음"
-
+    # 위험 요인이 없을 때 기본 추천이 나오는지 확인
+    default_recs = get_recommendations_for_factors([])
+    assert len(default_recs) > 0
 
 # ── 3. 데이터셋 7001줄 검증 ──────────────────────────────────────
 

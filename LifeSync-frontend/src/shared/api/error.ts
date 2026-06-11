@@ -17,6 +17,13 @@ export function getApiErrorMessage(
     return fallbackMessage
   }
 
+  if ('detail' in payload && Array.isArray((payload as { detail?: unknown }).detail)) {
+    const firstDetail = (payload as { detail?: Array<{ msg?: unknown }> }).detail?.[0]
+    if (firstDetail && typeof firstDetail.msg === 'string' && firstDetail.msg.trim()) {
+      return firstDetail.msg
+    }
+  }
+
   if ('message' in payload && typeof payload.message === 'string' && payload.message.trim()) {
     return payload.message
   }

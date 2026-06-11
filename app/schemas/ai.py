@@ -1,4 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class ActionableRecommendation(BaseModel):
+    title: str
+    description: str
+    action_link: str = Field(..., alias="actionLink")
+    category: str
 
 
 class AIHealthResponse(BaseModel):
@@ -22,7 +29,5 @@ class PersonaResponse(BaseModel):
     personaDescription: str
     mainRiskFactors: list[str]
     secondaryRiskFactors: list[str]
-    dailyRoutines: list[str]
-    cognitiveTrainings: list[str]
-    lifestyleTips: list[str]
+    actionableRecommendations: list[ActionableRecommendation]
     safetyNotice: str
